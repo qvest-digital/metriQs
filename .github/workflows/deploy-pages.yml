@@ -25,8 +25,8 @@ jobs:
         env:
           JIRA_CLOUD_CLIENT_ID: ${{ secrets.JIRA_CLOUD_CLIENT_ID }}
           JIRA_CLOUD_CLIENT_SECRET: ${{ secrets.JIRA_CLOUD_CLIENT_SECRET }}
-          JIRA_CLOUD_CALLBACK_URL: ${{ secrets.JIRA_CLOUD_CALLBACK_URL }}
-          PRODUCTION: ${{ secrets.PRODUCTION }}
+          JIRA_CLOUD_CALLBACK_URL: ${{ vars.JIRA_CLOUD_CALLBACK_URL }}
+          PRODUCTION: ${{ vars.PRODUCTION }}
         run: npm run build
 
       - name: Deploy to GitHub Pages
