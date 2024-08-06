@@ -12,7 +12,7 @@ import {environment} from "../../environments/environment";
 export class AuthService {
   private clientId = environment.jira_cloud_clientId;
   private clientSecret = environment.jira_cloud_clientSecret;
-  private redirectUri = 'http://localhost:4200/callback';
+  private redirectUri = environment.jira_cloud_callback_url;
   private authUrl = 'https://auth.atlassian.com/authorize';
   private tokenUrl = 'https://auth.atlassian.com/oauth/token';
   private resourceUrl = 'https://api.atlassian.com/oauth/token/accessible-resources';

@@ -13,6 +13,7 @@ const setEnv = () => {
   const envConfigFile = `export const environment = {
   jira_cloud_clientId: '${process.env["JIRA_CLOUD_CLIENT_ID"]}',
   jira_cloud_clientSecret: '${process.env["JIRA_CLOUD_CLIENT_SECRET"]}',
+  jira_cloud_callback_url: '${process.env["JIRA_CLOUD_CALLBACK_URL"]}',
   appVersion: '${appVersion}',
   production: ${process.env["PRODUCTION"]??false},
 };
