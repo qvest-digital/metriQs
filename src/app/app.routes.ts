@@ -5,6 +5,7 @@ import {CallbackComponent} from "./components/callback.component";
 export const routes: Routes = [
   { path: 'callback', component: CallbackComponent },
   // other routes
+  { path: '**', redirectTo: '', pathMatch: 'full' } // fallback route
 ];
 
 @NgModule({
