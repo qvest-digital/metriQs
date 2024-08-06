@@ -53,6 +53,12 @@ export class DatabaseService {
     await db.delete(TableNames.DATASETS, id);
   }
 
+
+  async hasWorkItemAgeData(): Promise<boolean> {
+    const db = await this.dbPromise;
+    return await (db.count(TableNames.ISSUES)) > 0;
+  }
+
   async getWorkItemAgeData(): Promise<Issue[]> {
     const db = await this.dbPromise;
     return db.getAll(TableNames.ISSUES).then(issues  => issues);

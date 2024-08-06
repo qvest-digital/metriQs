@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
 import {DatabaseService} from "../../services/database.service";
 import {Issue} from "../../models/issue";
-import {NgForOf} from "@angular/common";
+import {NgForOf, NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-work-item-age-chart',
   standalone: true,
   imports: [
-    NgForOf
+    NgForOf,
+    NgIf
   ],
   templateUrl: './work-item-age-chart.component.html',
   styleUrl: './work-item-age-chart.component.scss'
@@ -15,9 +16,6 @@ import {NgForOf} from "@angular/common";
 export class WorkItemAgeChartComponent {
   issues: Issue[] = [];
   constructor(private databaseService:DatabaseService) {}
-
-  ngOnInit() {
-  }
 
 
   async loadData() {

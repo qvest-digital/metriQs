@@ -1,10 +1,14 @@
-# JiraClient
+# MetriQs
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.1.3.
 
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Development
+* run `npm install` to install all needed dependencies
+* copy src/environments/.env-default to src/environments/.env
+* fill all needed values in src/environments/.env with correct values
+* run `npm run config` to create the environment.ts file
+* run `npm run start` for a dev server. 
+* Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 

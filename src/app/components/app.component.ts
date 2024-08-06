@@ -31,10 +31,4 @@ export class AppComponent implements OnInit {
     this.authService.login();
   }
 
-  async saveData() {
-    // const data = this.settingsService.getConfiguration();
-    // await this.databaseService.addDataset(data);
-  }
-
-
 }
