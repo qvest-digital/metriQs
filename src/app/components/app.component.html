@@ -1,0 +1,19 @@
+<!-- src/app/app.component.html -->
+<main class="main">
+  <div class="content">
+    <div class="left-side">
+      <h1>Hello, {{ title }}</h1>
+      <p>Congratulations! Your app is running. 🎉</p>
+      <button (click)="login()">Login with Jira</button>
+    </div>
+    <div class="divider" role="separator" aria-label="Divider"></div>
+    <div class="right-side">
+      <app-settings></app-settings>
+    </div>
+  </div>
+  <!-- src/app/components/app.component.html -->
+  <button (click)="saveData()">Save Data</button>
+
+</main>
+<app-work-item-age-chart></app-work-item-age-chart>
+<router-outlet></router-outlet>

@@ -1,0 +1,7 @@
+<p>work-item-age-chart works!</p>
+<button (click)="loadData()">Load Working Age Item Data</button>
+<ul>
+  <li *ngFor="let workItem of issues">
+    {{ workItem.key }} - {{ workItem.title }}
+  </li>
+</ul>
