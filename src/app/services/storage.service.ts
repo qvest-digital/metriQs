@@ -56,6 +56,7 @@ export function migrationFactory() {
 })
 export class StorageService {
 
+
   constructor(private dbService: NgxIndexedDBService) {
   }
 

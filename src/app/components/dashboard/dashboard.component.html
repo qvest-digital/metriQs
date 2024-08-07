@@ -1,5 +1,68 @@
 <div class="grid-container">
   <h1 class="mat-h1">Dashboard</h1>
+  <mat-grid-list cols="4" rowHeight="150px">
+    <mat-grid-tile [colspan]="1" [rowspan]="1">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Service Level Agreement</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="dashboard-card-content">
+        <mat-grid-list cols="2" rowHeight="2:1">
+          <mat-grid-tile><mat-icon aria-hidden="false" aria-label="Example user verified icon">handshake</mat-icon></mat-grid-tile>
+          <mat-grid-tile>34 days</mat-grid-tile>
+        </mat-grid-list>
+      </mat-card-content>
+    </mat-card>
+    </mat-grid-tile>
+    <mat-grid-tile [colspan]="1" [rowspan]="1">
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>Work in Progress</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="dashboard-card-content">
+          <mat-grid-list cols="2" rowHeight="2:1">
+            <mat-grid-tile><mat-icon aria-hidden="false" aria-label="Example user verified icon">work</mat-icon></mat-grid-tile>
+            <mat-grid-tile>7</mat-grid-tile>
+          </mat-grid-list>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+    <mat-grid-tile [colspan]="1" [rowspan]="1">
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>Throughput this week</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="dashboard-card-content">
+          <mat-grid-list cols="2" rowHeight="2:1">
+            <mat-grid-tile><mat-icon aria-hidden="false" aria-label="Example user verified icon">done_all</mat-icon></mat-grid-tile>
+            <mat-grid-tile>3</mat-grid-tile>
+          </mat-grid-list>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+  <mat-grid-list cols="2" rowHeight="400px">
+    <mat-grid-tile [colspan]="1" [rowspan]="1">
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>Work Item Age</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="dashboard-card-content">
+          <app-work-item-age-chart></app-work-item-age-chart>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+    <mat-grid-tile [colspan]="1" [rowspan]="1">
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>Cycle Time</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="dashboard-card-content">
+          <app-cycle-time-scatterplot></app-cycle-time-scatterplot>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
   <mat-grid-list cols="2" rowHeight="350px">
     @for (card of cards | async; track card) {
       <mat-grid-tile [colspan]="card.cols" [rowspan]="card.rows">
@@ -18,6 +81,7 @@
           </mat-card-header>
           <mat-card-content class="dashboard-card-content">
             <div>Card Content Here</div>
+            <app-work-item-age-chart></app-work-item-age-chart>
           </mat-card-content>
         </mat-card>
       </mat-grid-tile>

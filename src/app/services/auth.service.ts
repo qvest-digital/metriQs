@@ -65,7 +65,7 @@ export class AuthService {
 
     await this.databaseService.addDataset(dataset);
 
-    this.router.navigate(['/']);
+    this.router.navigate(['/settings']);
   }
 
 }

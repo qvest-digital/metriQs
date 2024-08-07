@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import { StorageService } from "../../services/storage.service";
 import { Issue } from "../../models/issue";
 import { NgForOf } from "@angular/common";
@@ -18,8 +18,8 @@ import {ToastrService} from "ngx-toastr";
   styleUrl: './work-item-age-chart.component.scss'
 })
 export class WorkItemAgeChartComponent {
+  @Input() workItemAgeData: any;
 
-  issues: Issue[] = [];
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   public scatterChartType: ChartType = 'scatter';
@@ -69,9 +69,7 @@ export class WorkItemAgeChartComponent {
   constructor(private databaseService: StorageService, private workItemService: WorkItemAgeService, private toasts: ToastrService) {}
 
   async loadData() {
-    this.issues = await this.databaseService.getAllIssues();
-    const items = this.workItemService.map2WorkItemAgeEntries(this.issues);
-    // const data = await this.databaseService.addWorkItemAgeData(items);
+    const items = await this.databaseService.getWorkItemAgeData();
     this.scatterChartData.datasets[0].data = items.map(item => ({
       x: item.age, // Assuming createdDate is a timestamp or date object
       y: item.age, // Assuming age is a numeric value representing the age of the work item
@@ -79,6 +77,10 @@ export class WorkItemAgeChartComponent {
     }));
     this.chart?.update();
     this.toasts.success('Successfully loaded work item age data');
-
   }
+
+  refreshChart() {
+    this.chart?.update();
+  }
+
 }

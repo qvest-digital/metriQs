@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { AsyncPipe } from '@angular/common';
+import {AsyncPipe, NgForOf} from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -9,6 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import {RouterLink, RouterOutlet} from "@angular/router";
+import {MatSelectModule} from "@angular/material/select";
+import {MatFormFieldModule} from "@angular/material/form-field";
 
 
 @Component({
@@ -22,9 +24,12 @@ import {RouterLink, RouterOutlet} from "@angular/router";
     MatSidenavModule,
     MatListModule,
     MatIconModule,
+    MatSelectModule,
+    MatFormFieldModule,
     AsyncPipe,
     RouterOutlet,
-    RouterLink
+    RouterLink,
+    NgForOf
   ]
 })
 export class LayoutComponent {
@@ -35,4 +40,12 @@ export class LayoutComponent {
       map(result => result.matches),
       shareReplay()
     );
+
+  datasets: string[] = ['team metriQs (jira cloud)', 'IoT Crew (jira selfhosted)', 'team Bärchen (open project)'];
+  selectedDataset: string = this.datasets[0];
+
+  onDatasetChange(event: any) {
+    console.log('Selected dataset:', event.value);
+    // Handle dataset change logic here
+  }
 }

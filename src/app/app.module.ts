@@ -12,6 +12,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {AppRoutingModule, routes} from "./app-routing.module";
 import {AppComponent} from "./app.component";
 import {RouterModule} from "@angular/router";
+import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datasets.component";
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import {RouterModule} from "@angular/router";
     OAuthModule.forRoot(),
     ToastrModule.forRoot(),
     BrowserAnimationsModule,
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes),
+    ManageDatasetsComponent
   ],
   providers: [StorageService, provideCharts(withDefaultRegisterables())],
 })

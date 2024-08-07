@@ -1,0 +1,16 @@
+<div>
+  <h2>Manage Datasets</h2>
+  <mat-form-field appearance="fill">
+    <mat-label>New Dataset</mat-label>
+    <input matInput [(ngModel)]="newDataset">
+  </mat-form-field>
+  <button mat-button (click)="addDataset()">Add Dataset</button>
+  <mat-list>
+    <mat-list-item *ngFor="let dataset of datasets">
+      {{ dataset }}
+      <button mat-icon-button (click)="removeDataset(dataset)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-list-item>
+  </mat-list>
+</div>
