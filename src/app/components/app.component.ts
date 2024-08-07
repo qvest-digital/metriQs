@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import {Router, ActivatedRoute, RouterOutlet} from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { DatabaseService } from '../services/database.service';
+import { StorageService } from '../services/storage.service';
 import {SettingsComponent} from "./settings.component";
 import {WorkItemAgeChartComponent} from "./work-item-age-chart/work-item-age-chart.component";
 
@@ -18,7 +18,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private databaseService: DatabaseService,
+    private databaseService: StorageService,
     private route: ActivatedRoute,
     private router: Router
   ) {}

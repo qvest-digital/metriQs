@@ -1,7 +1,8 @@
 <p>work-item-age-chart works!</p>
 <button  (click)="loadData()">3. Load Working Age Item Data</button>
-<ul>
-  <li *ngFor="let workItem of issues">
-    {{ workItem.key }} - {{ workItem.title }}
-  </li>
-</ul>
+
+<canvas baseChart
+        [data]="scatterChartData"
+        [options]="scatterChartOptions"
+        [type]="scatterChartType">
+</canvas>
