@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import {DatabaseService} from "../services/database.service";
+import {StorageService} from "../services/storage.service";
 
 @Component({
   selector: 'app-callback',
@@ -10,7 +10,7 @@ import {DatabaseService} from "../services/database.service";
 })
 export class CallbackComponent implements OnInit {
 
-  constructor(private route: ActivatedRoute, private router: Router, private authService: AuthService, private databaseService: DatabaseService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private authService: AuthService, private databaseService: StorageService) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {

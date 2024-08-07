@@ -4,4 +4,6 @@ export interface Dataset {
   url: string;
   access_token: string;
   cloudId: string;
+  id?: number;
+  jql: string;
 }

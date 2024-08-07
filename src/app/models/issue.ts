@@ -1,5 +1,9 @@
 export interface Issue {
   dataSetId: number;
-  key: string;
+  issueKey: string;
   title: string;
+  createdDate: Date;
+  status: string;
+  id?: number;
+  url: string;
 }

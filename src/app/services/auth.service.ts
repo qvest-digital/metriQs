@@ -2,9 +2,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { DatabaseService } from './database.service';
+import { StorageService } from './storage.service';
 import { Dataset } from '../models/dataset';
 import {environment} from "../../environments/environment";
+import {firstValueFrom} from "rxjs";
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,7 @@ export class AuthService {
   private tokenUrl = 'https://auth.atlassian.com/oauth/token';
   private resourceUrl = 'https://api.atlassian.com/oauth/token/accessible-resources';
 
-  constructor(private http: HttpClient, private router: Router, private databaseService: DatabaseService) {}
+  constructor(private http: HttpClient, private router: Router, private databaseService: StorageService) {}
 
   login() {
     const params = new HttpParams()
@@ -37,20 +38,20 @@ export class AuthService {
       .set('code', code)
       .set('redirect_uri', this.redirectUri);
 
-    const tokenResponse: any = await this.http.post(this.tokenUrl, body.toString(), {
+    const tokenResponse: any = await firstValueFrom(this.http.post(this.tokenUrl, body.toString(), {
       headers: new HttpHeaders({
         'Content-Type': 'application/x-www-form-urlencoded',
       }),
-    }).toPromise();
+    }));
 
     const accessToken = tokenResponse.access_token;
 
-    const resourceResponse: any = await this.http.get(this.resourceUrl, {
+    const resourceResponse: any = await firstValueFrom(this.http.get(this.resourceUrl, {
       headers: new HttpHeaders({
         'Authorization': `Bearer ${accessToken}`,
         'Accept': 'application/json',
       }),
-    }).toPromise();
+    }));
 
     const resourceId = resourceResponse[0].id;
 
@@ -59,6 +60,7 @@ export class AuthService {
       url: 'https://api.atlassian.com',
       access_token: accessToken,
       cloudId: resourceId,
+      jql: 'project = 10000 and status IN ("In Progress")',
     };
 
     await this.databaseService.addDataset(dataset);
