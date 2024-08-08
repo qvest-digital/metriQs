@@ -1,23 +1,35 @@
 // src/app/services/jira.service.ts
-import {Injectable} from '@angular/core';
+import {Injectable, OnInit} from '@angular/core';
 import {StorageService} from './storage.service';
 import {Issue} from "../models/issue";
-import {Version3Client} from "jira.js";
-import  *  as Version3 from 'jira.js/out/version3';
+import {Version2Client, Version3Client} from "jira.js";
+import *  as Version3 from 'jira.js/out/version3';
 import {ToastrService} from "ngx-toastr";
+import {ActivatedRoute, Router} from "@angular/router";
+import {AuthService} from "./auth.service";
 
 @Injectable({
   providedIn: 'root',
 })
-export class JiraService {
+export class JiraCloudService implements OnInit {
   constructor(
     private databaseService: StorageService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private route: ActivatedRoute, private router: Router, private authService: AuthService
   ) {
   }
 
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const code = params['code'];
+      if (code) {
+        this.authService.handleCallback(code);
+      }
+    });
+  }
+
   async getIssues(): Promise<Issue[]> {
-    const config = await this.databaseService.getDataset();
+    const config = await this.databaseService.getFirstDataset();
 
     if (config !== null && config?.access_token) {
       const client = new Version3Client({

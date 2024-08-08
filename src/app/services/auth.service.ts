@@ -1,9 +1,9 @@
 // src/app/services/auth.service.ts
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { StorageService } from './storage.service';
-import { Dataset } from '../models/dataset';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {Router} from '@angular/router';
+import {StorageService} from './storage.service';
+import {Dataset, DataSetType} from '../models/dataset';
 import {environment} from "../../environments/environment";
 import {firstValueFrom} from "rxjs";
 
@@ -19,6 +19,32 @@ export class AuthService {
   private resourceUrl = 'https://api.atlassian.com/oauth/token/accessible-resources';
 
   constructor(private http: HttpClient, private router: Router, private databaseService: StorageService) {}
+
+  private randomString(length: number): string {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+
+  loginToDataCenter() {
+    const codeVerifier = this.randomString(100);
+    const params = new HttpParams()
+      .set('client_id', environment.jira_data_center_clientId)
+      .set('response_type', 'code')
+      .set('redirect_uri', environment.jira_cloud_callback_url)
+      .set('state', 'myState')
+      .set('code_challenge', codeVerifier)
+      .set('code_challenge_method', 'plain')
+      .set('scope', 'READ');
+
+    const dataCenterUrl = 'http://localhost:8080/rest/oauth2/latest/authorize';
+    const fullUrl = `${dataCenterUrl}?${params.toString()}`;
+    window.location.href = fullUrl;
+  }
 
   login() {
     const params = new HttpParams()
@@ -56,8 +82,8 @@ export class AuthService {
     const resourceId = resourceResponse[0].id;
 
     const dataset: Dataset = {
-      useJira: true,
-      url: 'https://api.atlassian.com',
+      type: DataSetType.JIRA_CLOUD,
+      baseUrl: 'https://api.atlassian.com',
       access_token: accessToken,
       cloudId: resourceId,
       jql: 'project = 10000 and status IN ("In Progress")',

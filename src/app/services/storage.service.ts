@@ -61,14 +61,20 @@ export class StorageService {
   }
 
   async addDataset(dataset: Dataset): Promise<Dataset> {
-    await firstValueFrom(this.dbService.clear(TableNames.DATASETS));
     return firstValueFrom(this.dbService.add(TableNames.DATASETS, dataset));
   }
 
-  async getDataset(): Promise<Dataset> {
-    return firstValueFrom(this.dbService.getAll<Dataset>(TableNames.DATASETS)).then(datasets => datasets[0]);
+  async getAllDatasets(): Promise<Dataset[]> {
+    return firstValueFrom(this.dbService.getAll<Dataset>(TableNames.DATASETS));
   }
 
+  async removeDataset(id: number): Promise<void> {
+    await firstValueFrom(this.dbService.delete(TableNames.DATASETS, id));
+  }
+
+  async updateDataset(dataset: Dataset): Promise<void> {
+    await firstValueFrom(this.dbService.update(TableNames.DATASETS, dataset));
+  }
   async hasWorkItemAgeData(): Promise<boolean> {
     return await firstValueFrom(this.dbService.count(TableNames.WORK_ITEM_AGE)) > 0;
   }
@@ -91,4 +97,8 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd(TableNames.WORK_ITEM_AGE, workItemAgeEntries));
   }
 
+  async getFirstDataset() {
+    const datasets = await this.getAllDatasets();
+    return datasets[0];
+  }
 }

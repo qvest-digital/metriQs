@@ -1,11 +1,16 @@
-import { Component } from '@angular/core';
-import {MatFormField, MatLabel} from "@angular/material/form-field";
-import {FormsModule} from "@angular/forms";
-import {MatList, MatListItem} from "@angular/material/list";
-import {MatIcon} from "@angular/material/icon";
-import {MatButton, MatIconButton} from "@angular/material/button";
-import {NgForOf} from "@angular/common";
-import {MatInput} from "@angular/material/input";
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatFormField, MatLabel } from "@angular/material/form-field";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatList, MatListItem } from "@angular/material/list";
+import { MatIcon } from "@angular/material/icon";
+import { MatButton, MatIconButton } from "@angular/material/button";
+import { NgForOf, NgIf } from "@angular/common";
+import { MatInput } from "@angular/material/input";
+import { MatSelect, MatOption } from "@angular/material/select";
+import { StorageService } from '../../services/storage.service';
+import { AuthService } from '../../services/auth.service';
+import { Dataset, DataSetType } from '../../models/dataset';
 
 @Component({
   selector: 'app-manage-datasets',
@@ -14,6 +19,7 @@ import {MatInput} from "@angular/material/input";
   imports: [
     MatFormField,
     FormsModule,
+    ReactiveFormsModule,
     MatList,
     MatListItem,
     MatIcon,
@@ -21,22 +27,79 @@ import {MatInput} from "@angular/material/input";
     MatButton,
     NgForOf,
     MatInput,
-    MatLabel
+    MatLabel,
+    NgIf,
+    MatSelect,
+    MatOption
   ],
   styleUrls: ['./manage-datasets.component.scss']
 })
-export class ManageDatasetsComponent {
-  datasets: string[] = ['team metriQs (jira cloud)', 'IoT Crew (jira selfhosted)', 'team Bärchen (open project)'];
-  newDataset: string = '';
+export class ManageDatasetsComponent implements OnInit {
+  datasets: Dataset[] = [];
+  editMode: boolean = false;
+  datasetToEdit?: Dataset;
+  datasetForm: FormGroup;
+  datasetTypes = Object.values(DataSetType);
 
-  addDataset() {
-    if (this.newDataset) {
-      this.datasets.push(this.newDataset);
-      this.newDataset = '';
+  constructor(
+    private storageService: StorageService,
+    private authService: AuthService,
+    private fb: FormBuilder
+  ) {
+    this.datasetForm = this.fb.group({
+      name: ['', Validators.required],
+      jql: ['', Validators.required],
+      baseUrl: ['', Validators.required],
+      type: [DataSetType.JIRA_CLOUD, Validators.required],
+      access_token: ['', Validators.required],
+      cloudId: ['', Validators.required]
+    });
+  }
+
+  async ngOnInit() {
+    this.datasets = await this.storageService.getAllDatasets();
+  }
+
+  async onSubmit() {
+    if (this.datasetForm.valid) {
+      const dataset: Dataset = this.datasetForm.value;
+      if (this.editMode && this.datasetToEdit) {
+        dataset.id = this.datasetToEdit.id;
+        await this.storageService.updateDataset(dataset);
+      } else {
+        await this.storageService.addDataset(dataset);
+      }
+      this.datasets = await this.storageService.getAllDatasets();
+      this.resetForm();
     }
   }
 
-  removeDataset(dataset: string) {
-    this.datasets = this.datasets.filter(d => d !== dataset);
+  async removeDataset(dataset: Dataset) {
+    await this.storageService.removeDataset(dataset.id!);
+    this.datasets = await this.storageService.getAllDatasets();
   }
+
+  editDataset(dataset: Dataset) {
+    this.editMode = true;
+    this.datasetToEdit = { ...dataset };
+    this.datasetForm.patchValue(dataset);
+  }
+
+  cancelEdit() {
+    this.resetForm();
+  }
+
+  private resetForm() {
+    this.editMode = false;
+    this.datasetToEdit = undefined;
+    this.datasetForm.reset({
+      type: DataSetType.JIRA_CLOUD
+    });
+  }
+
+  async login() {
+    this.authService.login();
+  }
+
+  protected readonly DataSetType = DataSetType;
 }

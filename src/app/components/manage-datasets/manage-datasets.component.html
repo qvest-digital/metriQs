@@ -1,16 +1,50 @@
 <div>
   <h2>Manage Datasets</h2>
-  <mat-form-field appearance="fill">
-    <mat-label>New Dataset</mat-label>
-    <input matInput [(ngModel)]="newDataset">
-  </mat-form-field>
-  <button mat-button (click)="addDataset()">Add Dataset</button>
+
+  <form [formGroup]="datasetForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill">
+      <mat-label>Dataset Name</mat-label>
+      <input matInput formControlName="name">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>JQL</mat-label>
+      <input matInput formControlName="jql">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Base URL</mat-label>
+      <input matInput formControlName="baseUrl">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Type</mat-label>
+      <mat-select formControlName="type">
+        <mat-option *ngFor="let type of datasetTypes" [value]="type">
+          {{ type }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Access Token</mat-label>
+      <input matInput formControlName="access_token">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Cloud ID</mat-label>
+      <input matInput formControlName="cloudId">
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit">{{ editMode ? 'Save' : 'Add' }} Dataset</button>
+    <button mat-button type="button" (click)="cancelEdit()" *ngIf="editMode">Cancel</button>
+  </form>
+
   <mat-list>
     <mat-list-item *ngFor="let dataset of datasets">
-      {{ dataset }}
-      <button mat-icon-button (click)="removeDataset(dataset)">
-        <mat-icon>delete</mat-icon>
-      </button>
+      <div>
+        {{ dataset.name }} - {{ dataset.jql }}
+        <button mat-icon-button (click)="editDataset(dataset)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button (click)="removeDataset(dataset)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
     </mat-list-item>
   </mat-list>
 </div>
