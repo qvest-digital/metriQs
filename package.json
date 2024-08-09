@@ -30,7 +30,7 @@
     "config": "ts-node src/environments/set-env.ts",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build-electron": "cross-env NODE_ENV=production ng build --base-href ./ --configuration production",
+    "build-electron": "npm run config && cross-env NODE_ENV=production ng build --base-href ./ --configuration production",
     "start-electron": "electron .",
     "pack-electron": "electron-builder --dir",
     "dist-electron": "cross-env NODE_ENV=production electron-builder"
