@@ -1,0 +1,33 @@
+name: Release Electron App
+
+on:
+  push:
+    branches:
+      - packageForDesktop
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Angular app
+        run: npm run build
+
+      - name: Package Electron app
+        run: npm run build-electron
+
+      - name: Distribute Electron app
+        run:  npm run dist-electron
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
