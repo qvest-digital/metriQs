@@ -44,3 +44,4 @@ Thumbs.db
 #secrets
 src/environments/environment.ts
 src/environments/.env
+/out/*

@@ -4,15 +4,36 @@
   "main": "main.js",
   "author": "qvest digital",
   "license": "GPL-3.0",
+  "description": "made with love by qvest digital",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qvest-digital/metriQs.git"
+  },
+  "build": {
+    "appId": "com.qvest-digital.metriqs",
+    "productName": "metriQs",
+    "copyright": "Copyright © 2022 qvest digital",
+    "files": [
+      "dist/metriqs/browser/**/*",
+      "main.js",
+      "preload.js",
+      "node_modules/"
+    ],
+    "directories": {
+      "buildResources": "build"
+    }
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run config && ng build --configuration production",
+    "build": "npm run config && cross-env NODE_ENV=production ng build --configuration production",
     "config": "ts-node src/environments/set-env.ts",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build-electron": "ng build --base-href ./ && electron .",
-    "start-electron": "electron ."
+    "build-electron": "cross-env NODE_ENV=production ng build --base-href ./ --configuration production",
+    "start-electron": "electron .",
+    "pack-electron": "electron-builder --dir",
+    "dist-electron": "cross-env NODE_ENV=production electron-builder"
   },
   "private": true,
   "dependencies": {
@@ -28,24 +49,29 @@
     "@angular/router": "^18.1.0",
     "angular-oauth2-oidc": "^17.0.2",
     "chart.js": "^4.4.3",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-updater": "^6.2.1",
     "jira.js": "^4.0.1",
     "ng2-charts": "^6.0.1",
     "ngx-indexed-db": "^19.0.0",
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "update-electron-app": "^3.0.0",
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.1.3",
     "@angular/cli": "^18.1.3",
     "@angular/compiler-cli": "^18.1.0",
-    "@electron/packager": "^18.3.3",
+    "@electron/fuses": "^1.8.0",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^22.1.0",
     "colors": "^1.4.0",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "electron": "^31.3.1",
+    "electron-builder": "^24.13.3",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

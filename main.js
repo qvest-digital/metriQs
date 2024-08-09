@@ -1,6 +1,12 @@
 const { app, BrowserWindow } = require('electron')
+// include the Node.js 'path' module at the top of your file
+const path = require('node:path')
 
 const env = process.env.NODE_ENV || 'development';
+
+const { autoUpdater } = require("electron-updater")
+//FIXME: "Error: No published versions on GitHub"
+//autoUpdater.checkForUpdatesAndNotify()
 
 if (env.toLowerCase() === 'development') {
   // Remote Debugging nur im Entwicklungsmodus aktivieren
@@ -13,17 +19,18 @@ const createWindow = () => {
     width: 1024,
     height: 800,
     webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
       webSecurity: false, // Deaktiviert Web Security, for example for CORS
     }
   });
 
-  mainWindow.webContents.openDevTools()
-
   if(env.toLowerCase() === 'development') {
     mainWindow.loadURL('http://localhost:4200')
+    mainWindow.webContents.openDevTools()
   } else {
-    mainWindow.loadFile(/* Angular dist folder path */'dist/browser/index.html')
+      const indexPath = path.join(__dirname, 'dist', 'metriqs', 'browser', 'index.html');
+      mainWindow.loadFile(indexPath);
   }
 }
 
