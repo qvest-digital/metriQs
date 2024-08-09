@@ -1,43 +1,41 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
-const url = require('url');
+const { app, BrowserWindow } = require('electron')
 
-let mainWindow;
+const env = process.env.NODE_ENV || 'development';
 
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+if (env.toLowerCase() === 'development') {
+  // Remote Debugging nur im Entwicklungsmodus aktivieren
+  app.commandLine.appendSwitch('remote-debugging-port', '9222');
+  app.commandLine.appendSwitch('inspect', '0.0.0.0:5858');
+}
+
+const createWindow = () => {
+  const mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 800,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      webSecurity: false, // Deaktiviert Web Security, for example for CORS
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools()
 
-  mainWindow.loadURL(
-    url.format({
-      pathname: path.join(__dirname, 'dist/metriqs/browser/index.html'),
-      protocol: 'file:',
-      slashes: true
-    })
-  );
-
-  mainWindow.on('closed', function () {
-    mainWindow = null;
-  });
+  if(env.toLowerCase() === 'development') {
+    mainWindow.loadURL('http://localhost:4200')
+  } else {
+    mainWindow.loadFile(/* Angular dist folder path */'dist/browser/index.html')
+  }
 }
 
-app.on('ready', createWindow);
+app.whenReady().then(() => {
+  createWindow()
 
-app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+})
 
-app.on('activate', function () {
-  if (mainWindow === null) {
-    createWindow();
-  }
-});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit()
+})

@@ -10,7 +10,9 @@
     "build": "npm run config && ng build --configuration production",
     "config": "ts-node src/environments/set-env.ts",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "build-electron": "ng build --base-href ./ && electron .",
+    "start-electron": "electron ."
   },
   "private": true,
   "dependencies": {

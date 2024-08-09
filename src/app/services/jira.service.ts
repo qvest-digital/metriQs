@@ -19,18 +19,19 @@ export class JiraService {
   async getIssues(): Promise<Issue[]> {
     const config = await this.databaseService.getDataset();
 
-    if (config !== null && config?.access_token) {
+    //if (config !== null && config?.access_token) {
       const client = new Version3Client({
-        host: `https://api.atlassian.com/ex/jira/${config?.cloudId}`,
+        host: `https://api.atlassian.com/ex/jira/28720c3e-b057-4c53-b1fc-8ecc4e7bc20f`,
         authentication: {
-          oauth2: {
-            accessToken: config.access_token!,
+          basic: {
+            email: '//FIXME: email',
+            apiToken: '//FIXME: apiToken',
           },
         },
       });
 
       const response = await client.issueSearch.searchForIssuesUsingJqlPost({
-        jql: config.jql,
+        jql: 'status = "In Progress"',
         fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
         expand: ['changelog'],
       });
@@ -45,9 +46,9 @@ export class JiraService {
       }));
 
       return issues;
-    } else {
+   /* } else {
       this.toastr.error('No config found or access token missing');
       throw new Error('No config found or access token missing');
-    }
+    } */
   }
 }
