@@ -28,7 +28,7 @@ jobs:
         run: npm run build-electron
 
       - name: Distribute Electron app
-        run: dist-electron
+        run:  npm run dist-electron
 
       - name: Get version from package.json
         id: get_version
