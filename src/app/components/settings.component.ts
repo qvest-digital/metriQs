@@ -6,6 +6,7 @@ import {ToastrService} from "ngx-toastr";
 import {WorkItemAgeChartComponent} from "./work-item-age-chart/work-item-age-chart.component";
 import {AuthService} from "../services/auth.service";
 import {WorkItemAgeService} from "../services/work-item-age.service";
+import {JiraCloudService} from "../services/jira-cloud.service";
 
 @Component({
   selector: 'app-settings',
@@ -20,13 +21,15 @@ export class SettingsComponent {
   @ViewChild(WorkItemAgeChartComponent) workItemAgeChartComponent?: WorkItemAgeChartComponent;
   workItemAgeData: any;
 
-  constructor(private jiraService: JiraDataCenterService, private databaseService: StorageService, private toastr: ToastrService, private authService: AuthService,
+  constructor(private jiraService: JiraDataCenterService,
+              private jiraCloudService: JiraCloudService,
+              private databaseService: StorageService, private toastr: ToastrService,
               private workItemAgeService: WorkItemAgeService) {
   }
 
   async loginToJira() {
     try {
-      this.authService.login();
+      this.jiraCloudService.login();
 
       this.toastr.success('Successfully logged in to Jira');
     } catch (error) {
@@ -36,7 +39,7 @@ export class SettingsComponent {
 
   loginToJiraDataCenter() {
     try {
-      this.authService.loginToDataCenter();
+      this.jiraService.login();
 
       this.toastr.success('Successfully logged in to Jira');
     } catch (error) {

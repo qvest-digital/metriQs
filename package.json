@@ -21,7 +21,6 @@
     "@angular/platform-browser": "^18.1.0",
     "@angular/platform-browser-dynamic": "^18.1.0",
     "@angular/router": "^18.1.0",
-    "angular-oauth2-oidc": "^17.0.2",
     "chart.js": "^4.4.3",
     "jira.js": "^4.0.1",
     "ng2-charts": "^6.0.1",

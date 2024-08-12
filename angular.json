@@ -36,8 +36,7 @@
               "src/styles.scss",
               "node_modules/ngx-toastr/toastr.css"
             ],
-            "scripts": [],
-            "baseHref": "/metriQs/"
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -53,7 +52,8 @@
                   "maximumError": "4kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "baseHref": "/metriQs/"
             },
             "development": {
               "optimization": false,

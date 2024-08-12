@@ -97,9 +97,5 @@ export class ManageDatasetsComponent implements OnInit {
     });
   }
 
-  async login() {
-    this.authService.login();
-  }
-
   protected readonly DataSetType = DataSetType;
 }

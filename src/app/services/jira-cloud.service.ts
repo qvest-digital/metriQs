@@ -7,25 +7,83 @@ import *  as Version3 from 'jira.js/out/version3';
 import {ToastrService} from "ngx-toastr";
 import {ActivatedRoute, Router} from "@angular/router";
 import {AuthService} from "./auth.service";
+import {environment} from "../../environments/environment";
+import {firstValueFrom} from "rxjs";
+import {Dataset, DataSetType} from "../models/dataset";
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class JiraCloudService implements OnInit {
+  private authUrl: string = 'https://auth.atlassian.com/authorize';
+  private clientId = environment.jira_cloud_clientId;
+  private clientSecret = environment.jira_cloud_clientSecret;
+  private redirectUri = environment.jira_cloud_callback_url;
+
   constructor(
+    private http: HttpClient,
     private databaseService: StorageService,
     private toastr: ToastrService,
     private route: ActivatedRoute, private router: Router, private authService: AuthService
-  ) {
+  ) {}
+
+  login() {
+    const params = new HttpParams()
+      .set('client_id', this.clientId)
+      .set('response_type', 'code')
+      .set('redirect_uri', this.redirectUri)
+      .set('scope', 'read:jira-user read:jira-work');
+
+    window.location.href = `${this.authUrl}?${params.toString()}`;
   }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      const code = params['code'];
-      if (code) {
-        this.authService.handleCallback(code);
+      const authorizationCode = params['code'];
+      if (authorizationCode) {
+        this.handleCallback(authorizationCode);
       }
     });
+  }
+
+  async handleCallback(code: string): Promise<void> {
+    const body = new HttpParams()
+      .set('grant_type', 'authorization_code')
+      .set('client_id', this.clientId)
+      .set('client_secret', this.clientSecret)
+      .set('code', code)
+      .set('redirect_uri', this.redirectUri);
+
+    const tokenUrl = 'https://auth.atlassian.com/oauth/token';
+    const tokenResponse: any = await firstValueFrom(this.http.post(tokenUrl, body.toString(), {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }),
+    }));
+
+    const accessToken = tokenResponse.access_token;
+    const resourceUrl = 'https://api.atlassian.com/oauth/token/accessible-resources';
+    const resourceResponse: any = await firstValueFrom(this.http.get(resourceUrl, {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
+      }),
+    }));
+
+    const resourceId = resourceResponse[0].id;
+
+    const dataset: Dataset = {
+      type: DataSetType.JIRA_CLOUD,
+      baseUrl: 'https://api.atlassian.com',
+      access_token: accessToken,
+      cloudId: resourceId,
+      jql: 'project = 10000 and status IN ("In Progress")',
+    };
+
+    await this.databaseService.addDataset(dataset);
+
+    this.router.navigate(['/settings']);
   }
 
   async getIssues(): Promise<Issue[]> {

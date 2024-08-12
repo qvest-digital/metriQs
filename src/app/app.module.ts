@@ -1,9 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { SettingsComponent } from './components/settings.component';
 import { OAuthModule } from 'angular-oauth2-oidc';
-import { CallbackComponent } from './components/callback.component';
 import { StorageService, dbConfig } from './services/storage.service';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ToastrModule } from 'ngx-toastr';
@@ -16,7 +14,6 @@ import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datas
 
 @NgModule({
   declarations: [
-    CallbackComponent
   ],
   imports: [
     BrowserModule,
