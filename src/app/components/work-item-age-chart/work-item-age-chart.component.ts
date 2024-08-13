@@ -1,6 +1,5 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import { StorageService } from "../../services/storage.service";
-import { Issue } from "../../models/issue";
 import { NgForOf } from "@angular/common";
 import { BaseChartDirective } from "ng2-charts";
 import {Chart, ChartConfiguration, ChartData, ChartType, TooltipItem} from 'chart.js';
@@ -18,7 +17,7 @@ import annotationPlugin from 'chartjs-plugin-annotation';
   templateUrl: './work-item-age-chart.component.html',
   styleUrl: './work-item-age-chart.component.scss'
 })
-export class WorkItemAgeChartComponent {
+export class WorkItemAgeChartComponent implements OnInit {
   @Input() workItemAgeData: any;
 
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
@@ -89,6 +88,7 @@ export class WorkItemAgeChartComponent {
         pointBorderColor: '#fff',
         pointHoverBackgroundColor: '#fff',
         pointHoverBorderColor: 'rgba(54, 162, 235, 1)',
+        pointRadius: 10,
       },
     ],
   };
@@ -111,5 +111,9 @@ export class WorkItemAgeChartComponent {
 
   refreshChart() {
     this.chart?.update();
+  }
+
+  ngOnInit(): void {
+    this.loadData();
   }
 }

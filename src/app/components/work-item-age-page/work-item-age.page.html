@@ -1,19 +1,6 @@
 <div class="grid-container">
   <h1 class="mat-h1">Work Item Age</h1>
-  <mat-grid-list cols="4" rowHeight="100px">
-    <!-- Action Buttons -->
-    <mat-grid-tile [colspan]="1" [rowspan]="2">
-      <mat-card class="dashboard-card">
-        <mat-card-header>
-          <mat-card-title>Actions</mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="dashboard-card-content">
-          <button (click)="loginToJira()">1. Login into Jira Cloud</button>
-          <button (click)="fetchJiraIssues()">2. Fetch Jira Issues</button>
-          <button disabled (click)="loginToJiraDataCenter()">1. Login into Jira Data Center</button>
-        </mat-card-content>
-      </mat-card>
-    </mat-grid-tile>
+  <mat-grid-list cols="1" rowHeight="100px">
     <!-- Metadata Display -->
     <mat-grid-tile [colspan]="1" [rowspan]="2">
       <mat-card class="dashboard-card">

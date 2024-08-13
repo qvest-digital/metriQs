@@ -5,11 +5,13 @@ import {Issue} from "../models/issue";
 import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {NgxIndexedDBModule, DBConfig, NgxIndexedDBService} from 'ngx-indexed-db';
 import {firstValueFrom} from "rxjs";
+import {AppSettings} from "../models/appSettings";
 
 export class TableNames {
   static readonly DATASETS = 'datasets';
   static readonly ISSUES = 'issues';
   static readonly WORK_ITEM_AGE = 'workItemAge';
+  static readonly APP_SETTINGS = 'appSettings';
 }
 
 export const dbConfig: DBConfig = {
@@ -35,7 +37,11 @@ export const dbConfig: DBConfig = {
       storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
       ]
-    }]
+  }, {
+    store: TableNames.APP_SETTINGS,
+    storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: []
+  }
+  ]
 };
 
 // Ahead of time compiles requires an exported function for factories
@@ -47,6 +53,7 @@ export function migrationFactory() {
       const dataset = transaction.objectStore(TableNames.DATASETS);
       const issues = transaction.objectStore(TableNames.ISSUES);
       const workItems = transaction.objectStore(TableNames.WORK_ITEM_AGE);
+      const settings = transaction.objectStore(TableNames.APP_SETTINGS);
     },
   };
 }
@@ -72,8 +79,8 @@ export class StorageService {
     await firstValueFrom(this.dbService.delete(TableNames.DATASETS, id));
   }
 
-  async updateDataset(dataset: Dataset): Promise<void> {
-    await firstValueFrom(this.dbService.update(TableNames.DATASETS, dataset));
+  async updateDataset(dataset: Dataset): Promise<Dataset> {
+    return await firstValueFrom(this.dbService.update(TableNames.DATASETS, dataset));
   }
   async hasWorkItemAgeData(): Promise<boolean> {
     return await firstValueFrom(this.dbService.count(TableNames.WORK_ITEM_AGE)) > 0;
@@ -100,5 +107,23 @@ export class StorageService {
   async getFirstDataset() {
     const datasets = await this.getAllDatasets();
     return datasets[0];
+  }
+
+  getDataset(id: number): Promise<Dataset> {
+    return firstValueFrom(this.dbService.getByID<Dataset>(TableNames.DATASETS, id));
+  }
+
+  async saveAppSettings(appSettings: AppSettings): Promise<any> {
+    await firstValueFrom(this.dbService.clear(TableNames.APP_SETTINGS));
+    return firstValueFrom(this.dbService.add(TableNames.APP_SETTINGS, appSettings));
+  }
+
+  async getAppSettings(): Promise<AppSettings> {
+    return firstValueFrom(this.dbService.getAll<AppSettings>(TableNames.APP_SETTINGS)).then(datasets => datasets[0]);
+  }
+
+  async clearAllData() {
+    await this.dbService.deleteDatabase();
+
   }
 }
