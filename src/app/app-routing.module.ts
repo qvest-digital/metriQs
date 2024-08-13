@@ -1,6 +1,6 @@
 import {RouterModule, Routes} from '@angular/router';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { SettingsComponent } from './components/settings.component';
+import {WorkItemAgePage} from './components/work-item-age.page';
 import {NgModule} from "@angular/core";
 import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datasets.component";
 import {JiraCloudService} from "./services/jira-cloud.service";
@@ -15,7 +15,7 @@ export const routes: Routes = [
   { path: CALLBACK_JIRA_CLOUD, component: CallbackComponent },
   { path: CALLBACK_JIRA_DATA_CENTER, component: CallbackComponent },
   { path: 'dashboard', component: DashboardComponent },
-  { path: 'settings', component: SettingsComponent },
+  {path: 'settings', component: WorkItemAgePage},
   { path: 'manage-datasets', component: ManageDatasetsComponent }
 ];
 

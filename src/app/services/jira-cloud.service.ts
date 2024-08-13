@@ -82,6 +82,7 @@ export class JiraCloudService implements OnInit {
       access_token: accessToken,
       cloudId: resourceId,
       jql: 'project = 10000 and status IN ("In Progress")',
+      name: 'Jira Cloud Dataset',
     };
 
     await this.databaseService.addDataset(dataset);

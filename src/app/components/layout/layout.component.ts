@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import {AsyncPipe, NgForOf} from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -11,6 +11,9 @@ import { map, shareReplay } from 'rxjs/operators';
 import {RouterLink, RouterOutlet} from "@angular/router";
 import {MatSelectModule} from "@angular/material/select";
 import {MatFormFieldModule} from "@angular/material/form-field";
+import {StorageService} from "../../services/storage.service";
+import {Dataset} from "../../models/dataset";
+import {ToastrService} from "ngx-toastr";
 
 
 @Component({
@@ -32,8 +35,12 @@ import {MatFormFieldModule} from "@angular/material/form-field";
     NgForOf
   ]
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
   private breakpointObserver = inject(BreakpointObserver);
+
+  constructor(private storageService: StorageService, private toastr: ToastrService) {
+
+  }
 
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
@@ -41,11 +48,16 @@ export class LayoutComponent {
       shareReplay()
     );
 
-  datasets: string[] = ['team metriQs (jira cloud)', 'IoT Crew (jira selfhosted)', 'team Bärchen (open project)'];
-  selectedDataset: string = this.datasets[0];
+  datasets: Dataset[] = [];
+  selectedDataset: string = this.datasets[0] ? this.datasets[0].name! : '';
 
   onDatasetChange(event: any) {
-    console.log('Selected dataset:', event.value);
-    // Handle dataset change logic here
+    this.toastr.success('Selected dataset: ' + event.value);
   }
+
+  ngOnInit(): void {
+    this.storageService.getAllDatasets().then((datasets: Dataset[]) => {
+      this.datasets = datasets;
+    });
+  };
 }

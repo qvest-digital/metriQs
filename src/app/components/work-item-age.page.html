@@ -1,0 +1,52 @@
+<div class="grid-container">
+  <h1 class="mat-h1">Work Item Age</h1>
+  <mat-grid-list cols="4" rowHeight="100px">
+    <!-- Action Buttons -->
+    <mat-grid-tile [colspan]="1" [rowspan]="2">
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>Actions</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="dashboard-card-content">
+          <button (click)="loginToJira()">1. Login into Jira Cloud</button>
+          <button (click)="fetchJiraIssues()">2. Fetch Jira Issues</button>
+          <button disabled (click)="loginToJiraDataCenter()">1. Login into Jira Data Center</button>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+    <!-- Metadata Display -->
+    <mat-grid-tile [colspan]="1" [rowspan]="2">
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>Status</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="status-card-content">
+          <mat-chip-set
+            class="example-chip"
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="drop($event)"
+          >
+            @for (status of availableStatuses(); track status.name) {
+              <mat-chip-option selected="{{status.selected}}" class="example-box" cdkDrags> {{ status.name }}
+              </mat-chip-option>
+            }
+          </mat-chip-set>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+  <mat-grid-list cols="4" rowHeight="500px">
+    <!-- Large Chart in the Middle -->
+    <mat-grid-tile [colspan]="4" [rowspan]="1">
+      <mat-card class="workitem-age-card">
+        <mat-card-header>
+          <mat-card-title>Work Item Age Chart</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="dashboard-card-content">
+          <app-work-item-age-chart [workItemAgeData]="workItemAgeData"></app-work-item-age-chart>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+</div>

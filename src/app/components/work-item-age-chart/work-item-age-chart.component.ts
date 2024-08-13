@@ -3,9 +3,10 @@ import { StorageService } from "../../services/storage.service";
 import { Issue } from "../../models/issue";
 import { NgForOf } from "@angular/common";
 import { BaseChartDirective } from "ng2-charts";
-import {ChartConfiguration, ChartData, ChartType, TooltipItem} from 'chart.js';
+import {Chart, ChartConfiguration, ChartData, ChartType, TooltipItem} from 'chart.js';
 import {WorkItemAgeService} from "../../services/work-item-age.service";
 import {ToastrService} from "ngx-toastr";
+import annotationPlugin from 'chartjs-plugin-annotation';
 
 @Component({
   selector: 'app-work-item-age-chart',
@@ -29,23 +30,49 @@ export class WorkItemAgeChartComponent {
     plugins: {
       tooltip: {
         callbacks: {
-
           label: function(context) {
             let label = context.dataset.label || '';
-
             if (label) {
               label += ': ';
             }
-
             if ((context.raw as any).issueKey) {
               label += `${(context.raw as any).issueKey}, `;
             }
-
             if (context.parsed.y !== null) {
               label += context.parsed.y + ' days';
             }
             return label;
           },
+        }
+      },
+      annotation: {
+        annotations: {
+          line1: {
+            type: 'line',
+            yMin: 18,
+            yMax: 18,
+            borderColor: 'red',
+            borderWidth: 2,
+            label: {
+              content: 'SLE Threshold (80%)',
+              position: 'center',
+              display: true
+            }
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'In Progress (Status)'
+        }
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Age (days)'
         }
       }
     }
@@ -66,12 +93,15 @@ export class WorkItemAgeChartComponent {
     ],
   };
 
-  constructor(private databaseService: StorageService, private workItemService: WorkItemAgeService, private toasts: ToastrService) {}
+  constructor(private databaseService: StorageService, private workItemService: WorkItemAgeService, private toasts: ToastrService) {
+    Chart.register(annotationPlugin);
+  }
 
   async loadData() {
     const items = await this.databaseService.getWorkItemAgeData();
-    this.scatterChartData.datasets[0].data = items.map(item => ({
-      x: item.age, // Assuming createdDate is a timestamp or date object
+    items.sort((a, b) => a.issueId > b.issueId ? -1 : 1); // Sort items by issueId in descending order
+    this.scatterChartData.datasets[0].data = items.map((item, index) => ({
+      x: index,
       y: item.age, // Assuming age is a numeric value representing the age of the work item
       issueKey: item.issueKey // Add issueKey to the data point
     }));
@@ -82,5 +112,4 @@ export class WorkItemAgeChartComponent {
   refreshChart() {
     this.chart?.update();
   }
-
 }

@@ -27,7 +27,7 @@
       <mat-form-field appearance="fill">
         <mat-label>Select Dataset</mat-label>
         <mat-select [(value)]="selectedDataset" (selectionChange)="onDatasetChange($event)">
-          <mat-option *ngFor="let dataset of datasets" [value]="dataset">{{ dataset }}</mat-option>
+          <mat-option *ngFor="let dataset of datasets" [value]="dataset.id">{{ dataset.name }}</mat-option>
         </mat-select>
       </mat-form-field>
       <button mat-button routerLink="/manage-datasets"><mat-icon>settings</mat-icon>Manage Datasets</button>
