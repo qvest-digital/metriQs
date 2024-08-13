@@ -96,7 +96,7 @@ export class CycleTimeScatterplotComponent {
   }
 
   async loadData() {
-    const items = await this.databaseService.getCycletTimeData();
+    const items = await this.databaseService.getCycleTimeData();
     items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
     this.scatterChartData.datasets[0].data = items.map((item, index) => ({
       x: index,

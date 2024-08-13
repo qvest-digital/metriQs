@@ -58,20 +58,39 @@ export class WorkItemAgeService {
 
   map2CycleTimeEntries(issueHistories: IssueHistory[], issue: Issue): CycletimeEntry[] {
     const cycleTimeEntries: CycletimeEntry[] = [];
-    issueHistories.forEach(history => {
-      if (issue) {
+
+    if (issue && issueHistories.length > 0) {
+      const latestClosedDate = this.findLatestResolvedIssueHistory(issueHistories);
+      const firstInProgressDate = this.findFirstInProgressIssueHistory(issueHistories);
+
+      if (latestClosedDate != undefined && firstInProgressDate != undefined) {
         const cycleTimeEntry: CycletimeEntry = {
-          issueId: history.issueId,
+          inProgressState: "Done",
+          resolvedState: "In Progress",
+          resolvedDate: latestClosedDate!.createdDate,
+          inProgressDate: firstInProgressDate!.createdDate,
+          issueId: issue.id!,
           issueKey: issue.issueKey,
           title: issue.title,
-          //FIXME: calculate cycle time is not correct
-          cycleTime: this.calculateAge(history.createdDate, new Date()),
-          status: issue.status
+          cycleTime: this.calculateAge(firstInProgressDate!.createdDate, latestClosedDate!.createdDate)
         };
+
         cycleTimeEntries.push(cycleTimeEntry);
       }
-    });
+    }
     return cycleTimeEntries;
+  }
+
+  private findLatestResolvedIssueHistory(issueHistories: IssueHistory[]): IssueHistory | undefined {
+    return issueHistories
+      .filter(history => history.field === 'status' && history.toValue === 'Done')
+      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())[0];
+  }
+
+  private findFirstInProgressIssueHistory(issueHistories: IssueHistory[]): IssueHistory | undefined {
+    return issueHistories
+      .filter(history => history.field === 'status' && history.toValue === 'In Progress')
+      .sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())[0];
   }
 
 }
