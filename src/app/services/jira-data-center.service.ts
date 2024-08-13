@@ -11,6 +11,7 @@ import {environment} from "../../environments/environment";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {firstValueFrom} from "rxjs";
 import {Dataset, DataSetType} from "../models/dataset";
+import {CALLBACK_JIRA_CLOUD, CALLBACK_JIRA_DATA_CENTER} from "../app-routing.module";
 
 
 /*
@@ -22,7 +23,7 @@ see https://confluence.atlassian.com/adminjiraserver0912/jira-oauth-2-0-provider
 export class JiraDataCenterService implements OnInit {
   private clientId = environment.jira_data_center_clientId;
   private clientSecret = environment.jira_data_center_clientSecret;
-  private redirectUri = environment.jira_data_center_callback_url;
+  private redirectUri = (environment.production ? `https://qvest-digital.github.io/metriQs/` : 'http://localhost:4200/') + CALLBACK_JIRA_DATA_CENTER;
 
 
   constructor(

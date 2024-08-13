@@ -5,11 +5,15 @@ import {NgModule} from "@angular/core";
 import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datasets.component";
 import {JiraCloudService} from "./services/jira-cloud.service";
 import {JiraDataCenterService} from "./services/jira-data-center.service";
+import {CallbackComponent} from "./components/callback.component";
+
+export const CALLBACK_JIRA_CLOUD = 'callbackJiraCloud';
+export const CALLBACK_JIRA_DATA_CENTER = 'callbackJiraDataCenter';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  { path: 'callback', component: JiraCloudService },
-  { path: 'callbackJiraDataCenter', component: JiraDataCenterService },
+  { path: CALLBACK_JIRA_CLOUD, component: CallbackComponent },
+  { path: CALLBACK_JIRA_DATA_CENTER, component: CallbackComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'manage-datasets', component: ManageDatasetsComponent }

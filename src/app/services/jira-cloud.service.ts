@@ -11,7 +11,10 @@ import {environment} from "../../environments/environment";
 import {firstValueFrom} from "rxjs";
 import {Dataset, DataSetType} from "../models/dataset";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-
+import {CALLBACK_JIRA_CLOUD} from "../app-routing.module";
+/*
+see https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -19,7 +22,7 @@ export class JiraCloudService implements OnInit {
   private authUrl: string = 'https://auth.atlassian.com/authorize';
   private clientId = environment.jira_cloud_clientId;
   private clientSecret = environment.jira_cloud_clientSecret;
-  private redirectUri = environment.jira_cloud_callback_url;
+  private redirectUri = (environment.production ? `https://qvest-digital.github.io/metriQs/` : 'http://localhost:4200/') + CALLBACK_JIRA_CLOUD;
 
   constructor(
     private http: HttpClient,
