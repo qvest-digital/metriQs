@@ -66,7 +66,7 @@
     "build-electron": "npm run config && cross-env NODE_ENV=production ng build --base-href ./ --configuration production",
     "start-electron": "electron .",
     "pack-electron": "electron-builder --dir",
-    "dist-electron": "cross-env NODE_ENV=production electron-builder"
+    "dist-electron": "cross-env NODE_ENV=production electron-builder --no-sandbox --linux --win --mac"
   },
   "private": true,
   "dependencies": {
