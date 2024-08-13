@@ -119,13 +119,22 @@ export class LayoutComponent implements OnInit {
   }
 
   async refreshIssues(silent = false) {
+    this.storageService.addIssueHistories([{
+      issueId: 0,
+      fromValue: '333',
+      toValue: '333',
+      field: '33',
+      createdDate: new Date()
+    }]);
+
     if (this.selectedDataset) {
       const selectedDataset = this.datasets.find(dataset => dataset.id === this.selectedDataset);
       if (selectedDataset) {
         if (selectedDataset.type === DataSetType.JIRA_CLOUD) {
-          const issues = await this.jiraCloudService.getIssues(this.selectedDataset!);
+
+          await this.jiraCloudService.getAndSaveIssues(this.selectedDataset!);
           try {
-            await this.workItemAgeService.saveJiraIssues(issues, silent);
+            //FIXME: this is not working
             this.workItemAgeChartComponent?.loadData();
             this.workItemAgeChartComponent?.refreshChart();
             if (!silent)

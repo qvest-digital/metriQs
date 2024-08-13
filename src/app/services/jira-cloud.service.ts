@@ -2,14 +2,11 @@
 import {Injectable, OnInit} from '@angular/core';
 import {StorageService} from './storage.service';
 import {Issue} from "../models/issue";
-import {Version2Client, Version3Client} from "jira.js";
-import *  as Version3 from 'jira.js/out/version3';
+import {Version2, Version2Client, Version3Client} from "jira.js";
 import {ToastrService} from "ngx-toastr";
 import {ActivatedRoute, Router} from "@angular/router";
-import {AuthService} from "./auth.service";
 import {environment} from "../../environments/environment";
 import {firstValueFrom} from "rxjs";
-import {Dataset, DataSetType} from "../models/dataset";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {CALLBACK_JIRA_CLOUD, DASHBOARD} from "../app-routing.module";
 import {WorkItemAgeService} from "./work-item-age.service";
@@ -27,7 +24,7 @@ export class JiraCloudService implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private databaseService: StorageService,
+    private storageService: StorageService,
     private toastr: ToastrService,
     private route: ActivatedRoute, private router: Router,
     private workItemAgeService: WorkItemAgeService
@@ -77,17 +74,17 @@ export class JiraCloudService implements OnInit {
     }));
 
     const resourceId = resourceResponse[0].id;
-    const appSettings = await this.databaseService.getAppSettings();
-    const dataset = await this.databaseService.getDataset(appSettings.selectedDatasetId);
+    const appSettings = await this.storageService.getAppSettings();
+    const dataset = await this.storageService.getDataset(appSettings.selectedDatasetId);
     dataset.access_token = accessToken;
     dataset.cloudId = resourceId;
-    await this.databaseService.updateDataset(dataset);
+    await this.storageService.updateDataset(dataset);
     this.toastr.success('Successfully logged in to Jira');
     this.router.navigate([DASHBOARD]);
   }
 
-  async getIssues(dataSetId: number): Promise<Issue[]> {
-    const dataset = await this.databaseService.getDataset(dataSetId);
+  async getAndSaveIssues(dataSetId: number): Promise<Issue[]> {
+    const dataset = await this.storageService.getDataset(dataSetId);
 
     if (dataset !== null && dataset?.access_token) {
       const client = new Version3Client({
@@ -104,20 +101,35 @@ export class JiraCloudService implements OnInit {
         fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
         expand: ['changelog'],
       });
-      // Manually map the response to Issue objects
-      const issues: Issue[] = response!.issues!.map((issue: Version3.Version3Models.Issue) => ({
-        issueKey: issue.key,
-        title: issue.fields.summary,
-        dataSetId: dataset.id!,
-        createdDate: new Date(issue.fields.created),
-        status: issue.fields.status!.name!,
-        url: issue.self!,
-      }));
 
+      //if response successfully received, clear all data
+      await this.storageService.clearIssueData();
+
+      // Manually map the response to Issue objects
+      const issues: Issue[] = [];
+      for (const issue of response!.issues!) {
+        var i: Issue = {
+          issueKey: issue.key,
+          title: issue.fields.summary,
+          dataSetId: dataset.id!,
+          createdDate: new Date(issue.fields.created),
+          status: issue.fields.status!.name!,
+          url: issue.self!,
+        };
+        i = await this.storageService.addissue(i);
+
+        const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i.id!, issue.changelog as Version2.Version2Models.Changelog);
+        await this.storageService.addIssueHistories(issueHistories);
+
+        const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
+        await this.storageService.addWorkItemAgeData(wiAge);
+      }
       return issues;
     } else {
       this.toastr.error('No config found or access token missing');
       throw new Error('No config found or access token missing');
     }
   }
+
+
 }

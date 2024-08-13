@@ -1,4 +1,3 @@
-// src/app/services/indexed-db.service.ts
 import {Injectable} from '@angular/core';
 import {Dataset} from '../models/dataset';
 import {Issue} from "../models/issue";
@@ -6,12 +5,15 @@ import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {NgxIndexedDBModule, DBConfig, NgxIndexedDBService} from 'ngx-indexed-db';
 import {firstValueFrom} from "rxjs";
 import {AppSettings} from "../models/appSettings";
+import {IssueHistory} from "../models/IssueHistory";
 
 export class TableNames {
   static readonly DATASETS = 'datasets';
   static readonly ISSUES = 'issues';
   static readonly WORK_ITEM_AGE = 'workItemAge';
   static readonly APP_SETTINGS = 'appSettings';
+  static readonly ISSUE_HISTORY = 'issueHistory';
+  static readonly CYCLE_TIME = 'cycleTime';
 }
 
 export const dbConfig: DBConfig = {
@@ -40,7 +42,18 @@ export const dbConfig: DBConfig = {
   }, {
     store: TableNames.APP_SETTINGS,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: []
-  }
+  }, {
+    store: TableNames.ISSUE_HISTORY,
+    storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
+      {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+    ]
+  },
+    {
+      store: TableNames.CYCLE_TIME,
+      storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
+        {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+      ]
+    },
   ]
 };
 
@@ -54,6 +67,8 @@ export function migrationFactory() {
       const issues = transaction.objectStore(TableNames.ISSUES);
       const workItems = transaction.objectStore(TableNames.WORK_ITEM_AGE);
       const settings = transaction.objectStore(TableNames.APP_SETTINGS);
+      const issueHistory = transaction.objectStore(TableNames.ISSUE_HISTORY);
+      const cycleTime = transaction.objectStore(TableNames.CYCLE_TIME);
     },
   };
 }
@@ -62,7 +77,6 @@ export function migrationFactory() {
   providedIn: 'root'
 })
 export class StorageService {
-
 
   constructor(private dbService: NgxIndexedDBService) {
   }
@@ -94,6 +108,10 @@ export class StorageService {
     return firstValueFrom(this.dbService.getAll(TableNames.WORK_ITEM_AGE));
   }
 
+  async addissue(issue: Issue): Promise<Issue> {
+    return firstValueFrom(this.dbService.add(TableNames.ISSUES, issue));
+  }
+
   async addIssues(issues: Issue[]): Promise<number[]> {
     await firstValueFrom(this.dbService.clear(TableNames.ISSUES));
     return firstValueFrom(this.dbService.bulkAdd(TableNames.ISSUES, issues));
@@ -122,8 +140,25 @@ export class StorageService {
     return firstValueFrom(this.dbService.getAll<AppSettings>(TableNames.APP_SETTINGS)).then(datasets => datasets[0]);
   }
 
-  async clearAllData() {
-    await this.dbService.deleteDatabase();
-
+  //FIXME: this must be dependent on the dataset
+  async clearIssueData() {
+    await firstValueFrom(this.dbService.clear(TableNames.ISSUES));
+    await firstValueFrom(this.dbService.clear(TableNames.ISSUE_HISTORY));
+    await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
+    await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
   }
+
+  async clearAllData() {
+    //FIXME ???
+    //   await firstValueFrom(this.dbService.deleteDatabase());
+  }
+
+  async addIssueHistories(histories: IssueHistory[]): Promise<number[]> {
+    return firstValueFrom(this.dbService.bulkAdd(TableNames.ISSUE_HISTORY, histories));
+  }
+
+  async getAllIssueHistories(): Promise<IssueHistory[]> {
+    return firstValueFrom(this.dbService.getAll<IssueHistory>(TableNames.ISSUE_HISTORY));
+  }
+
 }

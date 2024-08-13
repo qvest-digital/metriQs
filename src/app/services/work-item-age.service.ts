@@ -2,6 +2,8 @@ import {Injectable} from '@angular/core';
 import {Issue} from "../models/issue";
 import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {StorageService} from "./storage.service";
+import {Version3} from "jira.js";
+import {IssueHistory} from "../models/IssueHistory";
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +12,26 @@ export class WorkItemAgeService {
 
   constructor(private storageService: StorageService) {
   }
+
+  public mapChangelogToIssueHistory(issueId: number, changelog: any): IssueHistory[] {
+    const issueHistories: IssueHistory[] = [];
+
+    changelog.histories.forEach((history: any) => {
+      history.items!.forEach((item: { fromString: any; toString: any; field: any; }) => {
+        const issueHistory: IssueHistory = {
+          issueId: issueId,
+          fromValue: item.fromString || '',
+          toValue: item.toString || '',
+          field: item.field || '',
+          createdDate: new Date(history.created!)
+        };
+        console.log('issueHistory', history);
+        issueHistories.push(issueHistory);
+      });
+    });
+    return issueHistories;
+  }
+
 
   map2WorkItemAgeEntries(issues: Issue[]): WorkItemAgeEntry[] {
     const workItemAgeEntries: WorkItemAgeEntry[] = [];
@@ -32,11 +54,5 @@ export class WorkItemAgeService {
     return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
   }
 
-  async saveJiraIssues(issues: Issue[], silent = false): Promise<WorkItemAgeEntry[]> {
-    await this.storageService.addIssues(issues);
-    const items = this.map2WorkItemAgeEntries(issues);
-    await this.storageService.addWorkItemAgeData(items);
-    return items;
-  }
 
 }
