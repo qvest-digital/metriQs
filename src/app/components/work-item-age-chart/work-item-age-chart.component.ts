@@ -40,6 +40,9 @@ export class WorkItemAgeChartComponent implements OnInit {
             if ((context.raw as any).issueKey) {
               label += `${(context.raw as any).issueKey}, `;
             }
+            if ((context.raw as any).status) {
+              label += `${(context.raw as any).status}, `;
+            }
             if (context.parsed.y !== null) {
               label += context.parsed.y + ' days';
             }
@@ -66,13 +69,14 @@ export class WorkItemAgeChartComponent implements OnInit {
     },
     scales: {
       x: {
-        display: true, // Hide the x-axis scale
+        type: 'category', // Set the x-axis type to 'category' to handle string values
+        display: true, // Show the x-axis scale
         ticks: {
-          display: false // Hide the x-axis ticks
+          display: true // Show the x-axis ticks
         },
         title: {
           display: true,
-          text: 'In Progress (Status)'
+          text: 'Status'
         }
       },
       y: {
@@ -84,7 +88,8 @@ export class WorkItemAgeChartComponent implements OnInit {
     }
   };
 
-  public scatterChartData: ChartData<'scatter'> = {
+
+  public scatterChartData: ChartData<'scatter', { x: string, y: number }[]> = {
     datasets: [
       {
         label: 'Work Item Age',
@@ -108,9 +113,10 @@ export class WorkItemAgeChartComponent implements OnInit {
     const items = await this.databaseService.getWorkItemAgeData();
     items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
     this.scatterChartData.datasets[0].data = items.map((item, index) => ({
-      x: index,
+      x: item.status,
       y: item.age, // Assuming age is a numeric value representing the age of the work item
-      issueKey: item.issueKey // Add issueKey to the data point
+      issueKey: item.issueKey, // Add issueKey to the data point
+      status: item.status
     }));
     this.chart?.update();
     this.toasts.success('Successfully loaded work item age data');

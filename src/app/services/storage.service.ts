@@ -50,6 +50,7 @@ export const dbConfigIssueData: DBConfig = {
       store: TableNames.WORK_ITEM_AGE,
       storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+        {name: 'status', keypath: 'status', options: {unique: false}},
       ]
   },  {
     store: TableNames.ISSUE_HISTORY,

@@ -12,6 +12,15 @@ import {MatIcon} from "@angular/material/icon";
 import {MatChip, MatChipsModule} from "@angular/material/chips";
 import {NgForOf} from "@angular/common";
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {
+  MatCell,
+  MatCellDef,
+  MatColumnDef,
+  MatHeaderCell, MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef, MatRow, MatRowDef,
+  MatTable, MatTableDataSource
+} from "@angular/material/table";
 
 export interface Status {
   name: string;
@@ -36,7 +45,17 @@ export interface Status {
     MatChip,
     NgForOf,
     CdkDropList,
-    CdkDrag
+    CdkDrag,
+    MatTable,
+    MatHeaderCell,
+    MatCell,
+    MatColumnDef,
+    MatHeaderRow,
+    MatHeaderRowDef,
+    MatCellDef,
+    MatHeaderCellDef,
+    MatRow,
+    MatRowDef
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,6 +63,9 @@ export interface Status {
 export class WorkItemAgePage implements OnInit {
   @ViewChild(WorkItemAgeChartComponent) workItemAgeChartComponent?: WorkItemAgeChartComponent;
   workItemAgeData: any;
+
+  public statusDataSource = new MatTableDataSource<any>();
+  public displayedColumns: string[] = ['issueKey', 'status'];
 
   constructor(private jiraDataCenterService: JiraDataCenterService,
               private jiraCloudService: JiraCloudService,
@@ -66,5 +88,12 @@ export class WorkItemAgePage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadData();
+  }
+
+  async loadData() {
+    const items = await this.databaseService.getWorkItemAgeData();
+    items.sort((a, b) => a.issueId > b.issueId ? 1 : -1);
+    this.statusDataSource.data = items;
   }
 }

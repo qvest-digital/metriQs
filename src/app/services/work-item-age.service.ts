@@ -65,8 +65,8 @@ export class WorkItemAgeService {
 
       if (latestClosedDate != undefined && firstInProgressDate != undefined) {
         const cycleTimeEntry: CycletimeEntry = {
-          inProgressState: "Done",
-          resolvedState: "In Progress",
+          inProgressState: firstInProgressDate.toValue,
+          resolvedState: latestClosedDate.toValue,
           resolvedDate: latestClosedDate!.createdDate,
           inProgressDate: firstInProgressDate!.createdDate,
           issueId: issue.id!,
