@@ -1,6 +1,10 @@
-import { Component } from '@angular/core';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import {Component, Input, ViewChild} from '@angular/core';
+import {Chart, ChartConfiguration, ChartData, ChartType} from 'chart.js';
 import {BaseChartDirective} from "ng2-charts";
+import {ToastrService} from "ngx-toastr";
+import annotationPlugin from 'chartjs-plugin-annotation';
+import {StorageService} from "../../services/storage.service";
+import {WorkItemAgeService} from "../../services/work-item-age.service";
 
 @Component({
   selector: 'app-cycle-time-scatterplot',
@@ -12,25 +16,102 @@ import {BaseChartDirective} from "ng2-charts";
   styleUrl: './cycle-time-scatterplot.component.scss'
 })
 export class CycleTimeScatterplotComponent {
+  @Input() workItemAgeData: any;
+
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+
+  public scatterChartType: ChartType = 'scatter';
+
   public scatterChartOptions: ChartConfiguration['options'] = {
     responsive: true,
+    plugins: {
+      legend: {
+        display: false // Hide the legend
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if ((context.raw as any).issueKey) {
+              label += `${(context.raw as any).issueKey}, `;
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y + ' days';
+            }
+            return label;
+          },
+        }
+      },
+      annotation: {
+        annotations: {
+          line1: {
+            type: 'line',
+            yMin: 18,
+            yMax: 18,
+            borderColor: 'red',
+            borderWidth: 2,
+            label: {
+              content: 'SLE Threshold (80%)',
+              position: 'center',
+              display: true
+            }
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        display: true, // Hide the x-axis scale
+        ticks: {
+          display: false // Hide the x-axis ticks
+        },
+        title: {
+          display: false,
+        }
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'cycletime (days)'
+        }
+      }
+    }
   };
 
   public scatterChartData: ChartData<'scatter'> = {
     datasets: [
       {
-        data: [
-          { x: 1, y: 1 },
-          { x: 2, y: 2 },
-          { x: 3, y: 3 },
-          { x: 4, y: 4 },
-          { x: 5, y: 5 },
-        ],
-        label: 'Series A',
+        label: 'Cycle Time',
+        data: [],
         pointRadius: 10,
       },
     ],
   };
 
-  public scatterChartType: ChartType = 'scatter';
+  constructor(private databaseService: StorageService, private workItemService: WorkItemAgeService, private toasts: ToastrService) {
+    Chart.register(annotationPlugin);
+  }
+
+  async loadData() {
+    const items = await this.databaseService.getCycletTimeData();
+    items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
+    this.scatterChartData.datasets[0].data = items.map((item, index) => ({
+      x: index,
+      y: item.cycleTime, // Assuming age is a numeric value representing the age of the work item
+      issueKey: item.issueKey // Add issueKey to the data point
+    }));
+    this.chart?.update();
+    this.toasts.success('Successfully loaded cycle time data');
+  }
+
+  refreshChart() {
+    this.chart?.update();
+  }
+
+  ngOnInit(): void {
+    this.loadData();
+  }
 }

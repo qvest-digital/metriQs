@@ -27,6 +27,9 @@ export class WorkItemAgeChartComponent implements OnInit {
   public scatterChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     plugins: {
+      legend: {
+        display: false // Hide the legend
+      },
       tooltip: {
         callbacks: {
           label: function(context) {
@@ -63,6 +66,10 @@ export class WorkItemAgeChartComponent implements OnInit {
     },
     scales: {
       x: {
+        display: true, // Hide the x-axis scale
+        ticks: {
+          display: false // Hide the x-axis ticks
+        },
         title: {
           display: true,
           text: 'In Progress (Status)'

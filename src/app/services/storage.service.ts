@@ -6,6 +6,7 @@ import {NgxIndexedDBModule, DBConfig, NgxIndexedDBService} from 'ngx-indexed-db'
 import {firstValueFrom} from "rxjs";
 import {AppSettings} from "../models/appSettings";
 import {IssueHistory} from "../models/IssueHistory";
+import {CycletimeEntry} from "../models/cycletimeEntry";
 
 export class TableNames {
   static readonly DATASETS = 'datasets';
@@ -160,4 +161,11 @@ export class StorageService {
     return firstValueFrom(this.dbService.getAll<IssueHistory>(TableNames.ISSUE_HISTORY));
   }
 
+  async addCycleTimeEntries(cycleTimes: CycletimeEntry[]) {
+    return firstValueFrom(this.dbService.bulkAdd<CycletimeEntry>(TableNames.CYCLE_TIME, cycleTimes ));
+  }
+
+  async getCycletTimeData() {
+    return firstValueFrom(this.dbService.getAll<CycletimeEntry>(TableNames.CYCLE_TIME));
+  }
 }

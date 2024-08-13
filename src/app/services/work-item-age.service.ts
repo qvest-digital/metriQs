@@ -56,15 +56,15 @@ export class WorkItemAgeService {
   }
 
 
-  map2CycleTimeEntries(issueHistories: IssueHistory[], issues: Issue[]): CycletimeEntry[] {
+  map2CycleTimeEntries(issueHistories: IssueHistory[], issue: Issue): CycletimeEntry[] {
     const cycleTimeEntries: CycletimeEntry[] = [];
     issueHistories.forEach(history => {
-      const issue = issues.find(i => i.id === history.issueId);
       if (issue) {
         const cycleTimeEntry: CycletimeEntry = {
           issueId: history.issueId,
           issueKey: issue.issueKey,
           title: issue.title,
+          //FIXME: calculate cycle time is not correct
           cycleTime: this.calculateAge(history.createdDate, new Date()),
           status: issue.status
         };

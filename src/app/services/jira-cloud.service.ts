@@ -124,9 +124,10 @@ export class JiraCloudService implements OnInit {
         const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
         await this.storageService.addWorkItemAgeData(wiAge);
 
-        const cycleTime = this.workItemAgeService.map2CycleTimeEntries()
-        2
-        CycleTimeEntries(i);
+        const cycleTime = this.workItemAgeService.map2CycleTimeEntries(issueHistories, i);
+        await this.storageService.addCycleTimeEntries(cycleTime);
+
+        //CycleTimeEntries(i);
       }
       return issues;
     } else {
