@@ -99,7 +99,7 @@ export class WorkItemAgeChartComponent implements OnInit {
 
   async loadData() {
     const items = await this.databaseService.getWorkItemAgeData();
-    items.sort((a, b) => a.issueId > b.issueId ? -1 : 1); // Sort items by issueId in descending order
+    items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
     this.scatterChartData.datasets[0].data = items.map((item, index) => ({
       x: index,
       y: item.age, // Assuming age is a numeric value representing the age of the work item

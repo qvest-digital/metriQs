@@ -118,7 +118,6 @@ export class StorageService {
   }
 
   async addWorkItemAgeData(workItemAgeEntries: WorkItemAgeEntry[]): Promise<number[]> {
-    await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
     return firstValueFrom(this.dbService.bulkAdd(TableNames.WORK_ITEM_AGE, workItemAgeEntries));
   }
 
@@ -145,12 +144,12 @@ export class StorageService {
     await firstValueFrom(this.dbService.clear(TableNames.ISSUES));
     await firstValueFrom(this.dbService.clear(TableNames.ISSUE_HISTORY));
     await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
-    await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
+    await firstValueFrom(this.dbService.clear(TableNames.CYCLE_TIME));
   }
 
   async clearAllData() {
     //FIXME ???
-    //   await firstValueFrom(this.dbService.deleteDatabase());
+    await firstValueFrom(this.dbService.deleteDatabase());
   }
 
   async addIssueHistories(histories: IssueHistory[]): Promise<number[]> {

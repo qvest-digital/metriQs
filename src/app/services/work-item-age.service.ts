@@ -4,13 +4,14 @@ import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {StorageService} from "./storage.service";
 import {Version3} from "jira.js";
 import {IssueHistory} from "../models/IssueHistory";
+import {CycletimeEntry} from "../models/cycletimeEntry";
 
 @Injectable({
   providedIn: 'root'
 })
 export class WorkItemAgeService {
 
-  constructor(private storageService: StorageService) {
+  constructor() {
   }
 
   public mapChangelogToIssueHistory(issueId: number, changelog: any): IssueHistory[] {
@@ -54,5 +55,23 @@ export class WorkItemAgeService {
     return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
   }
 
+
+  map2CycleTimeEntries(issueHistories: IssueHistory[], issues: Issue[]): CycletimeEntry[] {
+    const cycleTimeEntries: CycletimeEntry[] = [];
+    issueHistories.forEach(history => {
+      const issue = issues.find(i => i.id === history.issueId);
+      if (issue) {
+        const cycleTimeEntry: CycletimeEntry = {
+          issueId: history.issueId,
+          issueKey: issue.issueKey,
+          title: issue.title,
+          cycleTime: this.calculateAge(history.createdDate, new Date()),
+          status: issue.status
+        };
+        cycleTimeEntries.push(cycleTimeEntry);
+      }
+    });
+    return cycleTimeEntries;
+  }
 
 }
