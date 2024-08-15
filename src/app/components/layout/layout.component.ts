@@ -119,14 +119,6 @@ export class LayoutComponent implements OnInit {
   }
 
   async refreshIssues(silent = false) {
-    this.storageService.addIssueHistories([{
-      issueId: 0,
-      fromValue: '333',
-      toValue: '333',
-      field: '33',
-      createdDate: new Date()
-    }]);
-
     if (this.selectedDataset) {
       const selectedDataset = this.datasets.find(dataset => dataset.id === this.selectedDataset);
       if (selectedDataset) {

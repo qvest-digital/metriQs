@@ -1,4 +1,4 @@
-import {Component, ViewChild, signal, ChangeDetectionStrategy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit, signal, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {JiraDataCenterService} from '../../services/jira-data-center.service';
 import {StorageService} from "../../services/storage.service";
@@ -16,11 +16,16 @@ import {
   MatCell,
   MatCellDef,
   MatColumnDef,
-  MatHeaderCell, MatHeaderCellDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
   MatHeaderRow,
-  MatHeaderRowDef, MatRow, MatRowDef,
-  MatTable, MatTableDataSource
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef,
+  MatTable,
+  MatTableDataSource
 } from "@angular/material/table";
+import {WorkItemAgeEntry} from "../../models/workItemAgeEntry";
 
 export interface Status {
   name: string;
@@ -65,6 +70,9 @@ export class WorkItemAgePage implements OnInit {
   workItemAgeData: any;
 
   public statusDataSource = new MatTableDataSource<any>();
+  public workItemAgeDataSource = new MatTableDataSource<WorkItemAgeEntry>();
+  public workItemAgeColumns: string[] = ['issueId', 'issueKey', 'title', 'age', 'status'];
+
   public displayedColumns: string[] = ['issueKey', 'status'];
 
   constructor(private jiraDataCenterService: JiraDataCenterService,
@@ -92,8 +100,8 @@ export class WorkItemAgePage implements OnInit {
   }
 
   async loadData() {
-    const items = await this.databaseService.getWorkItemAgeData();
-    items.sort((a, b) => a.issueId > b.issueId ? 1 : -1);
-    this.statusDataSource.data = items;
+    this.workItemAgeDataSource.data = await this.databaseService.getWorkItemAgeData();
   }
+
+
 }

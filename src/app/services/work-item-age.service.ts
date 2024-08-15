@@ -5,6 +5,7 @@ import {StorageService} from "./storage.service";
 import {Version3} from "jira.js";
 import {IssueHistory} from "../models/IssueHistory";
 import {CycletimeEntry} from "../models/cycletimeEntry";
+import {Status} from "../models/status";
 
 @Injectable({
   providedIn: 'root'
@@ -91,6 +92,25 @@ export class WorkItemAgeService {
     return issueHistories
       .filter(history => history.field === 'status' && history.toValue === 'In Progress')
       .sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())[0];
+  }
+
+  public getAllStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
+    const statuses = new Set<string>();
+
+    issues.forEach(issue => {
+      // Add the status from the issue
+      statuses.add(issue.status);
+    });
+
+    // Add the statuses from the issue histories
+    issueHistories.forEach(history => {
+      if (history.field === 'status') {
+        statuses.add(history.fromValue);
+        statuses.add(history.toValue);
+      }
+    });
+
+    return Array.from(statuses);
   }
 
 }

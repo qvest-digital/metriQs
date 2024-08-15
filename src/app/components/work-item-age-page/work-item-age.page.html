@@ -37,29 +37,59 @@
     </mat-grid-tile>
   </mat-grid-list>
   <mat-grid-list cols="4" rowHeight="500px">
+
+    <mat-grid-tile [colspan]="4" [rowspan]="1">
+      <div class="table-container">
+        <table mat-table [dataSource]="workItemAgeDataSource" class="mat-elevation-z8">
+          <!-- Issue ID Column -->
+          <ng-container matColumnDef="issueId">
+            <th mat-header-cell *matHeaderCellDef> Issue ID</th>
+            <td mat-cell *matCellDef="let element"> {{ element.issueId }}</td>
+          </ng-container>
+          <!-- Issue Key Column -->
+          <ng-container matColumnDef="issueKey">
+            <th mat-header-cell *matHeaderCellDef> Issue Key</th>
+            <td mat-cell *matCellDef="let element"> {{ element.issueKey }}</td>
+          </ng-container>
+          <!-- Title Column -->
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef> Title</th>
+            <td mat-cell *matCellDef="let element"> {{ element.title }}</td>
+          </ng-container>
+          <!-- Age Column -->
+          <ng-container matColumnDef="age">
+            <th mat-header-cell *matHeaderCellDef> Age</th>
+            <td mat-cell *matCellDef="let element"> {{ element.age }}</td>
+          </ng-container>
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Status</th>
+            <td mat-cell *matCellDef="let element"> {{ element.status }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="workItemAgeColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: workItemAgeColumns;"></tr>
+        </table>
+      </div>
+    </mat-grid-tile>
+
+  </mat-grid-list>
+  <mat-grid-list cols="4" rowHeight="500px">
     <!-- New Card with Table -->
     <mat-grid-tile [colspan]="4" [rowspan]="1">
-      <mat-card class="status-table-card">
-        <mat-card-header>
-          <mat-card-title>Status Table</mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="scrollable-content">
-          <table mat-table [dataSource]="statusDataSource" class="mat-elevation-z8">
-            <!-- Issue Key Column -->
-            <ng-container matColumnDef="issueKey">
-              <th mat-header-cell *matHeaderCellDef> Issue Key </th>
-              <td mat-cell *matCellDef="let element"> {{element.issueKey}} </td>
-            </ng-container>
-            <!-- Status Column -->
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef> Status </th>
-              <td mat-cell *matCellDef="let element"> {{element.status}} </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </mat-card-content>
-      </mat-card>
+      <table mat-table [dataSource]="statusDataSource" class="mat-elevation-z8">
+        <!-- Issue Key Column -->
+        <ng-container matColumnDef="issueKey">
+          <th mat-header-cell *matHeaderCellDef> Issue Key</th>
+          <td mat-cell *matCellDef="let element"> {{ element.issueKey }}</td>
+        </ng-container>
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Status</th>
+          <td mat-cell *matCellDef="let element"> {{ element.status }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
     </mat-grid-tile>
   </mat-grid-list>
 </div>

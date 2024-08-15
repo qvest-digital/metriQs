@@ -10,6 +10,7 @@ import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {CALLBACK_JIRA_CLOUD, DASHBOARD} from "../app-routing.module";
 import {WorkItemAgeService} from "./work-item-age.service";
+
 /*
 see https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/
  */
@@ -28,7 +29,8 @@ export class JiraCloudService implements OnInit {
     private toastr: ToastrService,
     private route: ActivatedRoute, private router: Router,
     private workItemAgeService: WorkItemAgeService
-  ) {}
+  ) {
+  }
 
   login(dataSetId: number) {
     const params = new HttpParams()
@@ -95,41 +97,48 @@ export class JiraCloudService implements OnInit {
           },
         },
       });
+      try {
+        const response = await client.issueSearch.searchForIssuesUsingJqlPost({
+          jql: dataset.jql,
+          fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
+          expand: ['changelog'],
+        });
 
-      const response = await client.issueSearch.searchForIssuesUsingJqlPost({
-        jql: dataset.jql,
-        fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
-        expand: ['changelog'],
-      });
+        //if response successfully received, clear all data
+        await this.storageService.clearIssueData();
 
-      //if response successfully received, clear all data
-      await this.storageService.clearIssueData();
+        // Manually map the response to Issue objects
+        const issues: Issue[] = [];
+        for (const issue of response!.issues!) {
+          let i: Issue = {
+            issueKey: issue.key,
+            title: issue.fields.summary,
+            dataSetId: dataset.id!,
+            createdDate: new Date(issue.fields.created),
+            status: issue.fields.status!.name!,
+            url: issue.self!,
+          };
+          i = await this.storageService.addissue(i);
 
-      // Manually map the response to Issue objects
-      const issues: Issue[] = [];
-      for (const issue of response!.issues!) {
-        var i: Issue = {
-          issueKey: issue.key,
-          title: issue.fields.summary,
-          dataSetId: dataset.id!,
-          createdDate: new Date(issue.fields.created),
-          status: issue.fields.status!.name!,
-          url: issue.self!,
-        };
-        i = await this.storageService.addissue(i);
 
-        const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i.id!, issue.changelog as Version2.Version2Models.Changelog);
-        await this.storageService.addIssueHistories(issueHistories);
+          const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i.id!, issue.changelog as Version2.Version2Models.Changelog);
+          await this.storageService.addIssueHistories(issueHistories);
 
-        const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
-        await this.storageService.addWorkItemAgeData(wiAge);
+          const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
+          await this.storageService.addWorkItemAgeData(wiAge);
 
-        const cycleTime = this.workItemAgeService.map2CycleTimeEntries(issueHistories, i);
-        await this.storageService.addCycleTimeEntries(cycleTime);
+          const cycleTime = this.workItemAgeService.map2CycleTimeEntries(issueHistories, i);
+          await this.storageService.addCycleTimeEntries(cycleTime);
+        }
+        const allHistories = await this.storageService.getAllIssueHistories();
+        const status = this.workItemAgeService.getAllStatuses(issues, allHistories);
 
-        //CycleTimeEntries(i);
+        return issues;
+      } catch (error) {
+        this.toastr.error('Failed to fetch issues from Jira', error!.toString());
+        console.error('Error fetching issues:', error);
+        throw new Error('Error fetching issues from Jira');
       }
-      return issues;
     } else {
       this.toastr.error('No config found or access token missing');
       throw new Error('No config found or access token missing');
