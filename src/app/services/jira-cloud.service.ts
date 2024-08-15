@@ -131,7 +131,9 @@ export class JiraCloudService implements OnInit {
           await this.storageService.addCycleTimeEntries(cycleTime);
         }
         const allHistories = await this.storageService.getAllIssueHistories();
-        const status = this.workItemAgeService.getAllStatuses(issues, allHistories);
+
+        const status = this.workItemAgeService.findAllStatuses(issues, allHistories);
+        await this.storageService.addStatuses(status);
 
         return issues;
       } catch (error) {

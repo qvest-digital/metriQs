@@ -5,8 +5,9 @@ import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {NgxIndexedDBModule, DBConfig, NgxIndexedDBService} from 'ngx-indexed-db';
 import {firstValueFrom} from "rxjs";
 import {AppSettings} from "../models/appSettings";
-import {IssueHistory} from "../models/IssueHistory";
+import {IssueHistory} from "../models/issueHistory";
 import {CycletimeEntry} from "../models/cycletimeEntry";
+import {Status} from "../models/status";
 
 export class TableNames {
   static readonly DATASETS = 'datasets';
@@ -15,6 +16,7 @@ export class TableNames {
   static readonly APP_SETTINGS = 'appSettings';
   static readonly ISSUE_HISTORY = 'issueHistory';
   static readonly CYCLE_TIME = 'cycleTime';
+  static readonly STATUS = 'status';
 }
 
 export const dataSetDbConfig: DBConfig = {
@@ -33,6 +35,13 @@ export const dataSetDbConfig: DBConfig = {
   }, {
     store: TableNames.APP_SETTINGS,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: []
+  }, {
+    store: TableNames.STATUS,
+    storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
+      {name: 'name', keypath: 'name', options: {unique: false}},
+      {name: 'category', keypath: 'category', options: {unique: false}},
+      {name: 'dataSetId', keypath: 'dataSetId', options: { unique: false}},
+    ]
   },
   ]};
 
@@ -88,6 +97,7 @@ export function migrationFactoryDataset() {
     1: (db: any, transaction: { objectStore: (arg0: string) => any; }) => {
       const issues = transaction.objectStore(TableNames.DATASETS);
       const settings = transaction.objectStore(TableNames.APP_SETTINGS);
+      const status = transaction.objectStore(TableNames.STATUS);
     },
   };
 }
@@ -201,5 +211,10 @@ export class StorageService {
   async getCycleTimeData() {
     this.dbService.selectDb(dbConfigIssueData.name);
     return firstValueFrom(this.dbService.getAll<CycletimeEntry>(TableNames.CYCLE_TIME));
+  }
+
+  async addStatuses(status: Status[]) {
+    this.dbService.selectDb(dataSetDbConfig.name);
+    return firstValueFrom(this.dbService.bulkAdd<Status>(TableNames.STATUS, status));
   }
 }

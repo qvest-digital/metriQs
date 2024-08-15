@@ -3,7 +3,7 @@ import {Issue} from "../models/issue";
 import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {StorageService} from "./storage.service";
 import {Version3} from "jira.js";
-import {IssueHistory} from "../models/IssueHistory";
+import {IssueHistory} from "../models/issueHistory";
 import {CycletimeEntry} from "../models/cycletimeEntry";
 import {Status} from "../models/status";
 
@@ -94,19 +94,29 @@ export class WorkItemAgeService {
       .sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())[0];
   }
 
-  public getAllStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
-    const statuses = new Set<string>();
+  public findAllStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
+    const statuses = new Set<Status>();
 
     issues.forEach(issue => {
-      // Add the status from the issue
-      statuses.add(issue.status);
+      const status: Status = {
+        dataSetId: issue.dataSetId,
+        name: issue.status
+      };
+      statuses.add(status);
     });
 
-    // Add the statuses from the issue histories
     issueHistories.forEach(history => {
       if (history.field === 'status') {
-        statuses.add(history.fromValue);
-        statuses.add(history.toValue);
+        const fromStatus: Status = {
+          dataSetId: history.issueId,
+          name: history.fromValue,
+        };
+        const toStatus: Status = {
+          dataSetId: history.issueId,
+          name: history.toValue,
+        };
+        statuses.add(fromStatus);
+        statuses.add(toStatus);
       }
     });
 

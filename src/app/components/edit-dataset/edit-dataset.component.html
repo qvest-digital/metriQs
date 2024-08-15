@@ -1,0 +1,23 @@
+<form [formGroup]="datasetForm" (ngSubmit)="saveDataset()">
+  <div>
+    <label for="name">Name</label>
+    <input id="name" formControlName="name" type="text" />
+  </div>
+  <div>
+    <label for="baseUrl">Base URL</label>
+    <input id="baseUrl" formControlName="baseUrl" type="text" />
+  </div>
+  <div>
+    <label for="jql">JQL</label>
+    <input id="jql" formControlName="jql" type="text" />
+  </div>
+  <div>
+    <label for="access_token">Access Token</label>
+    <input id="access_token" formControlName="access_token" type="text" />
+  </div>
+  <div>
+    <label for="cloudId">Cloud ID</label>
+    <input id="cloudId" formControlName="cloudId" type="text" />
+  </div>
+  <button type="submit" [disabled]="datasetForm.invalid">Save</button>
+</form>
