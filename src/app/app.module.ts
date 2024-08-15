@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { StorageService, dbConfig } from './services/storage.service';
+import {StorageService, dbConfigIssueData, dataSetDbConfig} from './services/storage.service';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxIndexedDBModule } from 'ngx-indexed-db';
@@ -17,7 +17,7 @@ import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datas
   imports: [
     BrowserModule,
     AppRoutingModule,
-    NgxIndexedDBModule.forRoot(dbConfig),
+    NgxIndexedDBModule.forRoot(dbConfigIssueData, dataSetDbConfig),
     FormsModule,
     ToastrModule.forRoot(),
     BrowserAnimationsModule,

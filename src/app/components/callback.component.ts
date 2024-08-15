@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {CALLBACK_JIRA_CLOUD, CALLBACK_JIRA_DATA_CENTER} from "../app-routing.module";
+import {CALLBACK_JIRA_CLOUD, CALLBACK_JIRA_DATA_CENTER, DASHBOARD} from "../app-routing.module";
 import {JiraCloudService} from "../services/jira-cloud.service";
 import {JiraDataCenterService} from "../services/jira-data-center.service";
 import {ToastrService} from "ngx-toastr";
@@ -28,14 +28,14 @@ export class CallbackComponent implements OnInit {
         if (this.route.snapshot.routeConfig?.path === CALLBACK_JIRA_CLOUD) {
           this.jiraCloudService.handleCallback(authorizationCode).then(() => {
             this.toastService.success('Jira Cloud successfully connected');
-            this.router.navigate(['/settings']);
+            this.router.navigate([DASHBOARD]);
             this.toastService.success('Jira Cloud successfully connected');
           }).catch(error => {
             this.toastService.error('Jira Cloud has an error', error);
           });
         } else if (this.route.snapshot.routeConfig?.path === CALLBACK_JIRA_DATA_CENTER) {
           this.jiraDataCenterService.handleCallback(authorizationCode).then(() => {
-            this.router.navigate(['/settings']);
+            this.router.navigate([DASHBOARD]);
             this.toastService.success('Jira Data Center successfully connected');
           }).catch(error => {
             this.toastService.error('Jira Data Center has an error', error);

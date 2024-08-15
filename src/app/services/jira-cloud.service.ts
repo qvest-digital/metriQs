@@ -2,16 +2,14 @@
 import {Injectable, OnInit} from '@angular/core';
 import {StorageService} from './storage.service';
 import {Issue} from "../models/issue";
-import {Version2Client, Version3Client} from "jira.js";
-import *  as Version3 from 'jira.js/out/version3';
+import {Version2, Version2Client, Version3Client} from "jira.js";
 import {ToastrService} from "ngx-toastr";
 import {ActivatedRoute, Router} from "@angular/router";
-import {AuthService} from "./auth.service";
 import {environment} from "../../environments/environment";
 import {firstValueFrom} from "rxjs";
-import {Dataset, DataSetType} from "../models/dataset";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {CALLBACK_JIRA_CLOUD} from "../app-routing.module";
+import {CALLBACK_JIRA_CLOUD, DASHBOARD} from "../app-routing.module";
+import {WorkItemAgeService} from "./work-item-age.service";
 /*
 see https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/
  */
@@ -26,12 +24,13 @@ export class JiraCloudService implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private databaseService: StorageService,
+    private storageService: StorageService,
     private toastr: ToastrService,
-    private route: ActivatedRoute, private router: Router, private authService: AuthService
+    private route: ActivatedRoute, private router: Router,
+    private workItemAgeService: WorkItemAgeService
   ) {}
 
-  login() {
+  login(dataSetId: number) {
     const params = new HttpParams()
       .set('client_id', this.clientId)
       .set('response_type', 'code')
@@ -75,53 +74,67 @@ export class JiraCloudService implements OnInit {
     }));
 
     const resourceId = resourceResponse[0].id;
-
-    const dataset: Dataset = {
-      type: DataSetType.JIRA_CLOUD,
-      baseUrl: 'https://api.atlassian.com',
-      access_token: accessToken,
-      cloudId: resourceId,
-      jql: 'project = 10000 and status IN ("In Progress")',
-      name: 'Jira Cloud Dataset',
-    };
-
-    await this.databaseService.addDataset(dataset);
-
-    this.router.navigate(['/settings']);
+    const appSettings = await this.storageService.getAppSettings();
+    const dataset = await this.storageService.getDataset(appSettings.selectedDatasetId);
+    dataset.access_token = accessToken;
+    dataset.cloudId = resourceId;
+    await this.storageService.updateDataset(dataset);
+    this.toastr.success('Successfully logged in to Jira');
+    this.router.navigate([DASHBOARD]);
   }
 
-  async getIssues(): Promise<Issue[]> {
-    const config = await this.databaseService.getFirstDataset();
+  async getAndSaveIssues(dataSetId: number): Promise<Issue[]> {
+    const dataset = await this.storageService.getDataset(dataSetId);
 
-    if (config !== null && config?.access_token) {
+    if (dataset !== null && dataset?.access_token) {
       const client = new Version3Client({
-        host: `https://api.atlassian.com/ex/jira/${config?.cloudId}`,
+        host: `https://api.atlassian.com/ex/jira/${dataset?.cloudId}`,
         authentication: {
           oauth2: {
-            accessToken: config.access_token!,
+            accessToken: dataset.access_token!,
           },
         },
       });
 
       const response = await client.issueSearch.searchForIssuesUsingJqlPost({
-        jql: config.jql,
+        jql: dataset.jql,
         fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
         expand: ['changelog'],
       });
-      // Manually map the response to Issue objects
-      const issues: Issue[] = response!.issues!.map((issue: Version3.Version3Models.Issue) => ({
-        issueKey: issue.key,
-        title: issue.fields.summary,
-        dataSetId: config.id!,
-        createdDate: new Date(issue.fields.created),
-        status: issue.fields.status!.name!,
-        url: issue.self!,
-      }));
 
+      //if response successfully received, clear all data
+      await this.storageService.clearIssueData();
+
+      // Manually map the response to Issue objects
+      const issues: Issue[] = [];
+      for (const issue of response!.issues!) {
+        var i: Issue = {
+          issueKey: issue.key,
+          title: issue.fields.summary,
+          dataSetId: dataset.id!,
+          createdDate: new Date(issue.fields.created),
+          status: issue.fields.status!.name!,
+          url: issue.self!,
+        };
+        i = await this.storageService.addissue(i);
+
+        const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i.id!, issue.changelog as Version2.Version2Models.Changelog);
+        await this.storageService.addIssueHistories(issueHistories);
+
+        const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
+        await this.storageService.addWorkItemAgeData(wiAge);
+
+        const cycleTime = this.workItemAgeService.map2CycleTimeEntries(issueHistories, i);
+        await this.storageService.addCycleTimeEntries(cycleTime);
+
+        //CycleTimeEntries(i);
+      }
       return issues;
     } else {
       this.toastr.error('No config found or access token missing');
       throw new Error('No config found or access token missing');
     }
   }
+
+
 }

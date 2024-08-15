@@ -1,3 +1,4 @@
+// src/app/components/manage-datasets/manage-datasets.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatFormField, MatLabel } from "@angular/material/form-field";
@@ -9,8 +10,8 @@ import { NgForOf, NgIf } from "@angular/common";
 import { MatInput } from "@angular/material/input";
 import { MatSelect, MatOption } from "@angular/material/select";
 import { StorageService } from '../../services/storage.service';
-import { AuthService } from '../../services/auth.service';
 import { Dataset, DataSetType } from '../../models/dataset';
+import {LayoutComponent} from "../layout/layout.component";
 
 @Component({
   selector: 'app-manage-datasets',
@@ -43,16 +44,16 @@ export class ManageDatasetsComponent implements OnInit {
 
   constructor(
     private storageService: StorageService,
-    private authService: AuthService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private layoutComponent: LayoutComponent
   ) {
     this.datasetForm = this.fb.group({
       name: ['', Validators.required],
       jql: ['', Validators.required],
       baseUrl: ['', Validators.required],
       type: [DataSetType.JIRA_CLOUD, Validators.required],
-      access_token: ['', Validators.required],
-      cloudId: ['', Validators.required]
+      access_token: [''],
+      cloudId: ['']
     });
   }
 
@@ -62,15 +63,17 @@ export class ManageDatasetsComponent implements OnInit {
 
   async onSubmit() {
     if (this.datasetForm.valid) {
-      const dataset: Dataset = this.datasetForm.value;
+      var dataset: Dataset = this.datasetForm.value;
       if (this.editMode && this.datasetToEdit) {
         dataset.id = this.datasetToEdit.id;
-        await this.storageService.updateDataset(dataset);
+        dataset = await this.storageService.updateDataset(dataset);
       } else {
-        await this.storageService.addDataset(dataset);
+        dataset = await this.storageService.addDataset(dataset);
       }
       this.datasets = await this.storageService.getAllDatasets();
+      await this.storageService.saveAppSettings({selectedDatasetId: dataset.id!});
       this.resetForm();
+      this.layoutComponent.refreshDatasets(); // Refresh datasets in LayoutComponent
     }
   }
 
@@ -97,5 +100,4 @@ export class ManageDatasetsComponent implements OnInit {
     });
   }
 
-  protected readonly DataSetType = DataSetType;
 }

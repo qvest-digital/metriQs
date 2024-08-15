@@ -1,6 +1,5 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import { StorageService } from "../../services/storage.service";
-import { Issue } from "../../models/issue";
 import { NgForOf } from "@angular/common";
 import { BaseChartDirective } from "ng2-charts";
 import {Chart, ChartConfiguration, ChartData, ChartType, TooltipItem} from 'chart.js';
@@ -18,7 +17,7 @@ import annotationPlugin from 'chartjs-plugin-annotation';
   templateUrl: './work-item-age-chart.component.html',
   styleUrl: './work-item-age-chart.component.scss'
 })
-export class WorkItemAgeChartComponent {
+export class WorkItemAgeChartComponent implements OnInit {
   @Input() workItemAgeData: any;
 
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
@@ -28,6 +27,9 @@ export class WorkItemAgeChartComponent {
   public scatterChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     plugins: {
+      legend: {
+        display: false // Hide the legend
+      },
       tooltip: {
         callbacks: {
           label: function(context) {
@@ -37,6 +39,9 @@ export class WorkItemAgeChartComponent {
             }
             if ((context.raw as any).issueKey) {
               label += `${(context.raw as any).issueKey}, `;
+            }
+            if ((context.raw as any).status) {
+              label += `${(context.raw as any).status}, `;
             }
             if (context.parsed.y !== null) {
               label += context.parsed.y + ' days';
@@ -64,9 +69,14 @@ export class WorkItemAgeChartComponent {
     },
     scales: {
       x: {
+        type: 'category', // Set the x-axis type to 'category' to handle string values
+        display: true, // Show the x-axis scale
+        ticks: {
+          display: true // Show the x-axis ticks
+        },
         title: {
           display: true,
-          text: 'In Progress (Status)'
+          text: 'Status'
         }
       },
       y: {
@@ -78,7 +88,8 @@ export class WorkItemAgeChartComponent {
     }
   };
 
-  public scatterChartData: ChartData<'scatter'> = {
+
+  public scatterChartData: ChartData<'scatter', { x: string, y: number }[]> = {
     datasets: [
       {
         label: 'Work Item Age',
@@ -89,6 +100,7 @@ export class WorkItemAgeChartComponent {
         pointBorderColor: '#fff',
         pointHoverBackgroundColor: '#fff',
         pointHoverBorderColor: 'rgba(54, 162, 235, 1)',
+        pointRadius: 10,
       },
     ],
   };
@@ -99,11 +111,12 @@ export class WorkItemAgeChartComponent {
 
   async loadData() {
     const items = await this.databaseService.getWorkItemAgeData();
-    items.sort((a, b) => a.issueId > b.issueId ? -1 : 1); // Sort items by issueId in descending order
+    items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
     this.scatterChartData.datasets[0].data = items.map((item, index) => ({
-      x: index,
+      x: item.status,
       y: item.age, // Assuming age is a numeric value representing the age of the work item
-      issueKey: item.issueKey // Add issueKey to the data point
+      issueKey: item.issueKey, // Add issueKey to the data point
+      status: item.status
     }));
     this.chart?.update();
     this.toasts.success('Successfully loaded work item age data');
@@ -111,5 +124,9 @@ export class WorkItemAgeChartComponent {
 
   refreshChart() {
     this.chart?.update();
+  }
+
+  ngOnInit(): void {
+    this.loadData();
   }
 }

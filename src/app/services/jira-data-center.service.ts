@@ -2,7 +2,7 @@
 import {Injectable, OnInit} from '@angular/core';
 import {StorageService} from './storage.service';
 import {Issue} from "../models/issue";
-import {Version2Client, Version3Client} from "jira.js";
+import {Version3Client} from "jira.js";
 import *  as Version3 from 'jira.js/out/version3';
 import {ToastrService} from "ngx-toastr";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -10,8 +10,8 @@ import {AuthService} from "./auth.service";
 import {environment} from "../../environments/environment";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {firstValueFrom} from "rxjs";
-import {Dataset, DataSetType} from "../models/dataset";
-import {CALLBACK_JIRA_CLOUD, CALLBACK_JIRA_DATA_CENTER} from "../app-routing.module";
+import {CALLBACK_JIRA_DATA_CENTER, DASHBOARD} from "../app-routing.module";
+import {WorkItemAgeService} from "./work-item-age.service";
 
 
 /*
@@ -31,7 +31,9 @@ export class JiraDataCenterService implements OnInit {
     private databaseService: StorageService,
     private toastr: ToastrService,
     private route: ActivatedRoute,
-    private router: Router, private authService: AuthService
+    private router: Router,
+    private authService: AuthService,
+    private workItemAgeService: WorkItemAgeService
   ) {
   }
 
@@ -44,7 +46,7 @@ export class JiraDataCenterService implements OnInit {
     });
   }
 
-  login() {
+  login(dataSetId: number) {
     const authUrl: string = 'https://jira-staging.qvest-digital.com/rest/oauth2/latest/authorize';
     const code_verifier = this.authService.randomString(100);
 
@@ -61,8 +63,9 @@ export class JiraDataCenterService implements OnInit {
   }
 
   async handleCallback(code: string): Promise<void> {
+    const appSettings = await this.databaseService.getAppSettings();
+    const dataset = await this.databaseService.getDataset(appSettings.selectedDatasetId);
 
-    //retrieve a new access_token
     const body = new HttpParams()
       .set('grant_type', 'authorization_code')
       .set('client_id', this.clientId)
@@ -70,7 +73,7 @@ export class JiraDataCenterService implements OnInit {
       .set('code', code)
       .set('redirect_uri', this.redirectUri);
 
-    const tokenUrl = 'https://atlassian.example.com/rest/oauth2/latest/token';
+    const tokenUrl = dataset.baseUrl + '/rest/oauth2/latest/token';
     const tokenResponse
       :
       any = await firstValueFrom(this.http.post(tokenUrl, body.toString(), {
@@ -79,21 +82,13 @@ export class JiraDataCenterService implements OnInit {
       }),
     }));
 
-    const accessToken = tokenResponse.access_token;
+    dataset.access_token = tokenResponse.access_token;
+    await this.databaseService.updateDataset(dataset);
 
-    const dataset: Dataset = {
-      type: DataSetType.JIRA_CLOUD,
-      baseUrl: 'https://api.atlassian.com',
-      access_token: accessToken,
-      jql: 'project = 10000 and status IN ("In Progress")',
-    };
-
-    await this.databaseService.addDataset(dataset);
-
-    this.router.navigate(['/settings']);
+    this.router.navigate([DASHBOARD]);
   }
 
-  async getIssues(): Promise<Issue[]> {
+  async getIssues(dataSetId: number): Promise<Issue[]> {
     const config = await this.databaseService.getFirstDataset();
 
     if (config !== null && config?.access_token

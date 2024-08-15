@@ -1,18 +1,26 @@
 import {Component, ViewChild, signal, ChangeDetectionStrategy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {JiraDataCenterService} from '../services/jira-data-center.service';
-import {StorageService} from "../services/storage.service";
+import {JiraDataCenterService} from '../../services/jira-data-center.service';
+import {StorageService} from "../../services/storage.service";
 import {ToastrService} from "ngx-toastr";
-import {WorkItemAgeChartComponent} from "./work-item-age-chart/work-item-age-chart.component";
-import {AuthService} from "../services/auth.service";
-import {WorkItemAgeService} from "../services/work-item-age.service";
-import {JiraCloudService} from "../services/jira-cloud.service";
+import {WorkItemAgeChartComponent} from "../work-item-age-chart/work-item-age-chart.component";
+import {WorkItemAgeService} from "../../services/work-item-age.service";
+import {JiraCloudService} from "../../services/jira-cloud.service";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {MatGridList, MatGridTile} from "@angular/material/grid-list";
 import {MatIcon} from "@angular/material/icon";
 import {MatChip, MatChipsModule} from "@angular/material/chips";
 import {NgForOf} from "@angular/common";
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {
+  MatCell,
+  MatCellDef,
+  MatColumnDef,
+  MatHeaderCell, MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef, MatRow, MatRowDef,
+  MatTable, MatTableDataSource
+} from "@angular/material/table";
 
 export interface Status {
   name: string;
@@ -20,7 +28,7 @@ export interface Status {
 }
 
 @Component({
-  selector: 'app-settings',
+  selector: 'app-work-item-age-page',
   templateUrl: './work-item-age.page.html',
   styleUrl: './work-item-age.page.scss',
   imports: [
@@ -37,7 +45,17 @@ export interface Status {
     MatChip,
     NgForOf,
     CdkDropList,
-    CdkDrag
+    CdkDrag,
+    MatTable,
+    MatHeaderCell,
+    MatCell,
+    MatColumnDef,
+    MatHeaderRow,
+    MatHeaderRowDef,
+    MatCellDef,
+    MatHeaderCellDef,
+    MatRow,
+    MatRowDef
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,6 +63,9 @@ export interface Status {
 export class WorkItemAgePage implements OnInit {
   @ViewChild(WorkItemAgeChartComponent) workItemAgeChartComponent?: WorkItemAgeChartComponent;
   workItemAgeData: any;
+
+  public statusDataSource = new MatTableDataSource<any>();
+  public displayedColumns: string[] = ['issueKey', 'status'];
 
   constructor(private jiraDataCenterService: JiraDataCenterService,
               private jiraCloudService: JiraCloudService,
@@ -58,42 +79,6 @@ export class WorkItemAgePage implements OnInit {
     {name: 'review', selected: false},
     {name: 'done', selected: false},]);
 
-  async loginToJira() {
-    try {
-      this.jiraCloudService.login();
-
-      this.toastr.success('Successfully logged in to Jira');
-    } catch (error) {
-      this.toastr.error(error!.toString(), 'Failed to log in to Jira');
-    }
-  }
-
-  loginToJiraDataCenter() {
-    try {
-      this.jiraDataCenterService.login();
-
-      this.toastr.success('Successfully logged in to Jira');
-    } catch (error) {
-      this.toastr.error(error!.toString(), 'Failed to log in to Jira');
-    }
-  }
-
-  async fetchJiraIssues() {
-    try {
-      const issues = await this.jiraCloudService.getIssues();
-
-      await this.databaseService.addIssues(issues);
-      const items = this.workItemAgeService.map2WorkItemAgeEntries(issues);
-      await this.databaseService.addWorkItemAgeData(items);
-      this.workItemAgeData = items;
-      this.workItemAgeChartComponent?.loadData();
-      this.workItemAgeChartComponent?.refreshChart();
-      this.toastr.success('Successfully fetched issues from Jira');
-    } catch (error) {
-      this.toastr.error(error!.toString(), 'Failed to fetch issues from Jira');
-    }
-  }
-
 
   drop(event: CdkDragDrop<Status[]>) {
     this.availableStatuses.update(status => {
@@ -103,6 +88,12 @@ export class WorkItemAgePage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.fetchJiraIssues();
+    this.loadData();
+  }
+
+  async loadData() {
+    const items = await this.databaseService.getWorkItemAgeData();
+    items.sort((a, b) => a.issueId > b.issueId ? 1 : -1);
+    this.statusDataSource.data = items;
   }
 }
