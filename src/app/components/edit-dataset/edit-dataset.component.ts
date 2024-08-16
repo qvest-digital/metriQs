@@ -11,6 +11,7 @@ import {MatOption, MatSelect} from "@angular/material/select";
 import {NgForOf, NgIf} from "@angular/common";
 import {ToastrService} from "ngx-toastr";
 import {MANAGE_DATASETS} from "../../app-routing.module";
+import {Status} from "../../models/status";
 
 @Component({
   selector: 'app-edit-dataset',
@@ -35,6 +36,7 @@ export class EditDatasetComponent implements OnInit {
   datasetForm: FormGroup;
   datasetId?: number;
   datasetTypes = Object.values(DataSetType);
+  currentStates: Status[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -61,6 +63,7 @@ export class EditDatasetComponent implements OnInit {
         jql: dataset.jql ?? '',
         type: dataset.type ?? this.datasetTypes[0]
       });
+      this.currentStates = await this.storageService.getAllStatuses();
     }
   }
 

@@ -35,5 +35,13 @@
       <button mat-raised-button color="primary" type="submit" [disabled]="datasetForm.invalid">Save</button>
       <button *ngIf="datasetId" mat-raised-button color="warn" type="button" (click)="deleteDataset()">Delete</button>
     </mat-grid-tile>
+    <mat-grid-tile colspan="2">
+      <h3>Current States</h3>
+      <ul>
+        <li *ngFor="let state of currentStates">{{ state.name }}</li>
+      </ul>
+    </mat-grid-tile>
   </mat-grid-list>
 </form>
+
+

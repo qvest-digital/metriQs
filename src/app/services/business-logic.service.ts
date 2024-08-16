@@ -15,13 +15,14 @@ export class BusinessLogicService {
   constructor() {
   }
 
-  public mapChangelogToIssueHistory(issueId: number, changelog: any): IssueHistory[] {
+  public mapChangelogToIssueHistory(issue: Issue, changelog: any): IssueHistory[] {
     const issueHistories: IssueHistory[] = [];
 
     changelog.histories.forEach((history: any) => {
       history.items!.forEach((item: { fromString: any; toString: any; field: any; }) => {
         const issueHistory: IssueHistory = {
-          issueId: issueId,
+          issueId: issue.id!,
+          datasetId: issue.dataSetId,
           fromValue: item.fromString || '',
           toValue: item.toString || '',
           field: item.field || '',
@@ -107,20 +108,25 @@ export class BusinessLogicService {
 
     issueHistories.forEach(history => {
       if (history.field === 'status') {
-        const fromStatus: Status = {
-          dataSetId: history.issueId,
-          name: history.fromValue,
-        };
-        const toStatus: Status = {
-          dataSetId: history.issueId,
-          name: history.toValue,
-        };
-        statuses.add(fromStatus);
-        statuses.add(toStatus);
+        if (!this.stateExistsInSet(statuses, history.fromValue)) {
+
+          statuses.add({dataSetId: history.datasetId, name: history.fromValue});
+        } else if (!this.stateExistsInSet(statuses, history.toValue)) {
+          statuses.add({dataSetId: history.datasetId, name: history.toValue});
+        }
       }
     });
 
     return Array.from(statuses);
+  }
+
+  private stateExistsInSet(set: Set<Status>, name: string): boolean {
+    for (let item of set) {
+      if (item.name === name) {
+        return true; // Object with the same key already exists
+      }
+    }
+    return false;
   }
 
 }

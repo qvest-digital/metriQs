@@ -144,8 +144,8 @@ export class LayoutComponent implements OnInit {
 
   }
 
-  clearDatabase() {
-    this.storageService.clearAllData();
+  async clearDatabase() {
+    await this.storageService.clearAllData();
   }
 
   protected readonly MANAGE_DATASETS = MANAGE_DATASETS;

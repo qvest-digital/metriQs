@@ -78,8 +78,6 @@ export const dbConfigIssueData: DBConfig = {
 
 // Ahead of time compiles requires an exported function for factories
 export function migrationFactory() {
-  // The animal table was added with version 2 but none of the existing tables or data needed
-  // to be modified so a migrator for that version is not included.
   return {
     1: (db: any, transaction: { objectStore: (arg0: string) => any; }) => {
       const issues = transaction.objectStore(TableNames.ISSUES);
@@ -189,7 +187,12 @@ export class StorageService {
 
   async clearAllData() {
     this.dbService.selectDb(dbConfigIssueData.name);
-    this.dbService.deleteDatabase();
+    firstValueFrom(this.dbService.deleteObjectStore(TableNames.ISSUE_HISTORY));
+    firstValueFrom(this.dbService.deleteObjectStore(TableNames.ISSUES));
+    firstValueFrom(this.dbService.deleteObjectStore(TableNames.WORK_ITEM_AGE));
+    firstValueFrom(this.dbService.deleteObjectStore(TableNames.CYCLE_TIME));
+    this.dbService.deleteDatabase()
+
   }
 
   async addIssueHistories(histories: IssueHistory[]): Promise<number[]> {
@@ -218,4 +221,8 @@ export class StorageService {
   }
 
 
+  getAllStatuses() {
+    this.dbService.selectDb(dataSetDbConfig.name);
+    return firstValueFrom(this.dbService.getAll<Status>(TableNames.STATUS));
+  }
 }

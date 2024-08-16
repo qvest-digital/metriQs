@@ -1,4 +1,5 @@
 export interface IssueHistory {
+  datasetId: number;
   id?: number;
   issueId: number;
   fromValue: string;

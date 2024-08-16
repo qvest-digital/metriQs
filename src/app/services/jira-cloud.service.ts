@@ -121,7 +121,7 @@ export class JiraCloudService implements OnInit {
           i = await this.storageService.addissue(i);
 
 
-          const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i.id!, issue.changelog as Version2.Version2Models.Changelog);
+          const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i, issue.changelog as Version2.Version2Models.Changelog);
           await this.storageService.addIssueHistories(issueHistories);
 
           const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
