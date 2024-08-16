@@ -3,7 +3,7 @@ import { StorageService } from "../../services/storage.service";
 import { NgForOf } from "@angular/common";
 import { BaseChartDirective } from "ng2-charts";
 import {Chart, ChartConfiguration, ChartData, ChartType, TooltipItem} from 'chart.js';
-import {WorkItemAgeService} from "../../services/work-item-age.service";
+import {BusinessLogicService} from "../../services/business-logic.service";
 import {ToastrService} from "ngx-toastr";
 import annotationPlugin from 'chartjs-plugin-annotation';
 
@@ -105,7 +105,7 @@ export class WorkItemAgeChartComponent implements OnInit {
     ],
   };
 
-  constructor(private databaseService: StorageService, private workItemService: WorkItemAgeService, private toasts: ToastrService) {
+  constructor(private databaseService: StorageService, private workItemService: BusinessLogicService, private toasts: ToastrService) {
     Chart.register(annotationPlugin);
   }
 

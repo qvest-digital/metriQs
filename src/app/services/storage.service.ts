@@ -160,10 +160,9 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd(TableNames.WORK_ITEM_AGE, workItemAgeEntries));
   }
 
-  async getFirstDataset() {
+  async createDataset(newDataset: Dataset) {
     this.dbService.selectDb(dataSetDbConfig.name);
-    const datasets = await this.getAllDatasets();
-    return datasets[0];
+    return firstValueFrom(this.dbService.add<Dataset>(TableNames.DATASETS, newDataset));
   }
 
   getDataset(id: number): Promise<Dataset> {
@@ -217,4 +216,6 @@ export class StorageService {
     this.dbService.selectDb(dataSetDbConfig.name);
     return firstValueFrom(this.dbService.bulkAdd<Status>(TableNames.STATUS, status));
   }
+
+
 }

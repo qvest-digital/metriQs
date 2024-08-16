@@ -1,32 +1,6 @@
-<!-- src/app/components/manage-datasets/manage-datasets.component.html -->
 <div>
   <h2>Manage Datasets</h2>
-
-  <form [formGroup]="datasetForm" (ngSubmit)="onSubmit()">
-    <mat-form-field appearance="fill">
-      <mat-label>Dataset Name</mat-label>
-      <input matInput formControlName="name">
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>JQL</mat-label>
-      <input matInput formControlName="jql">
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>Base URL</mat-label>
-      <input matInput formControlName="baseUrl">
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>Type</mat-label>
-      <mat-select formControlName="type">
-        <mat-option *ngFor="let type of datasetTypes" [value]="type">
-          {{ type }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit">{{ editMode ? 'Save' : 'Add' }} Dataset</button>
-    <button mat-button type="button" (click)="cancelEdit()" *ngIf="editMode">Cancel</button>
-  </form>
-
+  <button mat-raised-button color="primary" (click)="createDataset()">Create New Dataset</button>
   <mat-list>
     <mat-list-item *ngFor="let dataset of datasets">
       <div>

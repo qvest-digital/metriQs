@@ -10,7 +10,7 @@ import {Status} from "../models/status";
 @Injectable({
   providedIn: 'root'
 })
-export class WorkItemAgeService {
+export class BusinessLogicService {
 
   constructor() {
   }

@@ -4,7 +4,7 @@ import {JiraDataCenterService} from '../../services/jira-data-center.service';
 import {StorageService} from "../../services/storage.service";
 import {ToastrService} from "ngx-toastr";
 import {WorkItemAgeChartComponent} from "../work-item-age-chart/work-item-age-chart.component";
-import {WorkItemAgeService} from "../../services/work-item-age.service";
+import {BusinessLogicService} from "../../services/business-logic.service";
 import {JiraCloudService} from "../../services/jira-cloud.service";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {MatGridList, MatGridTile} from "@angular/material/grid-list";
@@ -78,7 +78,7 @@ export class WorkItemAgePage implements OnInit {
   constructor(private jiraDataCenterService: JiraDataCenterService,
               private jiraCloudService: JiraCloudService,
               private databaseService: StorageService, private toastr: ToastrService,
-              private workItemAgeService: WorkItemAgeService) {
+              private workItemAgeService: BusinessLogicService) {
   }
 
   readonly availableStatuses = signal<Status[]>([

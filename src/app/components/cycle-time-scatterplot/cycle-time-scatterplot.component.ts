@@ -4,7 +4,7 @@ import {BaseChartDirective} from "ng2-charts";
 import {ToastrService} from "ngx-toastr";
 import annotationPlugin from 'chartjs-plugin-annotation';
 import {StorageService} from "../../services/storage.service";
-import {WorkItemAgeService} from "../../services/work-item-age.service";
+import {BusinessLogicService} from "../../services/business-logic.service";
 
 @Component({
   selector: 'app-cycle-time-scatterplot',
@@ -91,7 +91,7 @@ export class CycleTimeScatterplotComponent {
     ],
   };
 
-  constructor(private databaseService: StorageService, private workItemService: WorkItemAgeService, private toasts: ToastrService) {
+  constructor(private databaseService: StorageService, private workItemService: BusinessLogicService, private toasts: ToastrService) {
     Chart.register(annotationPlugin);
   }
 

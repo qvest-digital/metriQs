@@ -8,8 +8,8 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {environment} from "../../environments/environment";
 import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {CALLBACK_JIRA_CLOUD, DASHBOARD} from "../app-routing.module";
-import {WorkItemAgeService} from "./work-item-age.service";
+import {CALLBACK_JIRA_CLOUD, DASHBOARD, MANAGE_DATASETS} from "../app-routing.module";
+import {BusinessLogicService} from "./business-logic.service";
 
 /*
 see https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/
@@ -28,7 +28,7 @@ export class JiraCloudService implements OnInit {
     private storageService: StorageService,
     private toastr: ToastrService,
     private route: ActivatedRoute, private router: Router,
-    private workItemAgeService: WorkItemAgeService
+    private workItemAgeService: BusinessLogicService
   ) {
   }
 
@@ -82,7 +82,7 @@ export class JiraCloudService implements OnInit {
     dataset.cloudId = resourceId;
     await this.storageService.updateDataset(dataset);
     this.toastr.success('Successfully logged in to Jira');
-    this.router.navigate([DASHBOARD]);
+    this.router.navigate([MANAGE_DATASETS, appSettings.selectedDatasetId]);
   }
 
   async getAndSaveIssues(dataSetId: number): Promise<Issue[]> {
