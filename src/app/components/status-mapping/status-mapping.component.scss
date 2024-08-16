@@ -1,0 +1,19 @@
+.status-mapping-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.category-column {
+  width: 30%;
+}
+
+.status-list {
+  min-height: 200px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.status-chip {
+  margin: 5px 0;
+}

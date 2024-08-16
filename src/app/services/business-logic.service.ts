@@ -95,7 +95,7 @@ export class BusinessLogicService {
       .sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())[0];
   }
 
-  public findAllStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
+  public findAllNewStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
     const statuses = new Set<Status>();
 
     issues.forEach(issue => {
@@ -129,4 +129,10 @@ export class BusinessLogicService {
     return false;
   }
 
+
+  filterOutMappedStatuses(newStatesFound: Status[], allStatuses: Status[]) {
+    return newStatesFound.filter(newState =>
+      !allStatuses.some(existingState => existingState.category === newState.category)
+    );
+  }
 }

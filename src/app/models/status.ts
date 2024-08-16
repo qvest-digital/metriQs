@@ -1,7 +1,7 @@
 export enum StatusCategory {
-  ToDo = 'To Do',
-  InProgress = 'In Progress',
-  Done = 'Done',
+  ToDo = "To Do",
+  InProgress = "In Progress",
+  Done = "Done",
 }
 
 export interface Status {

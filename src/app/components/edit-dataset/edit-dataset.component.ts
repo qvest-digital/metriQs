@@ -12,6 +12,7 @@ import {NgForOf, NgIf} from "@angular/common";
 import {ToastrService} from "ngx-toastr";
 import {MANAGE_DATASETS} from "../../app-routing.module";
 import {Status} from "../../models/status";
+import {StatusMappingComponent} from "../status-mapping/status-mapping.component";
 
 @Component({
   selector: 'app-edit-dataset',
@@ -28,7 +29,7 @@ import {Status} from "../../models/status";
     MatSelect,
     MatOption,
     NgForOf,
-    NgIf, MatError
+    NgIf, MatError, StatusMappingComponent
   ],
   styleUrls: ['./edit-dataset.component.scss']
 })

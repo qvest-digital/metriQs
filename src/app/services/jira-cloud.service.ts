@@ -28,7 +28,7 @@ export class JiraCloudService implements OnInit {
     private storageService: StorageService,
     private toastr: ToastrService,
     private route: ActivatedRoute, private router: Router,
-    private workItemAgeService: BusinessLogicService
+    private businessLogicService: BusinessLogicService
   ) {
   }
 
@@ -121,19 +121,23 @@ export class JiraCloudService implements OnInit {
           i = await this.storageService.addissue(i);
 
 
-          const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i, issue.changelog as Version2.Version2Models.Changelog);
+          const issueHistories = this.businessLogicService.mapChangelogToIssueHistory(i, issue.changelog as Version2.Version2Models.Changelog);
           await this.storageService.addIssueHistories(issueHistories);
 
-          const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
+          const wiAge = this.businessLogicService.map2WorkItemAgeEntries([i]);
           await this.storageService.addWorkItemAgeData(wiAge);
 
-          const cycleTime = this.workItemAgeService.map2CycleTimeEntries(issueHistories, i);
+          const cycleTime = this.businessLogicService.map2CycleTimeEntries(issueHistories, i);
           await this.storageService.addCycleTimeEntries(cycleTime);
         }
         const allHistories = await this.storageService.getAllIssueHistories();
 
-        const status = this.workItemAgeService.findAllStatuses(issues, allHistories);
-        await this.storageService.addStatuses(status);
+        let newStatesFound = this.businessLogicService.findAllNewStatuses(issues, allHistories);
+
+        const allStatuses = await this.storageService.getAllStatuses();
+
+        newStatesFound = this.businessLogicService.filterOutMappedStatuses(newStatesFound, allStatuses);
+        await this.storageService.addStatuses(newStatesFound);
 
         return issues;
       } catch (error) {

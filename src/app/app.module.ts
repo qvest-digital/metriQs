@@ -10,6 +10,8 @@ import {AppRoutingModule, routes} from "./app-routing.module";
 import {AppComponent} from "./app.component";
 import {RouterModule} from "@angular/router";
 import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datasets.component";
+import {DragDropModule} from "@angular/cdk/drag-drop";
+import {MatChipsModule} from "@angular/material/chips";
 
 @NgModule({
   declarations: [
@@ -22,7 +24,9 @@ import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datas
     ToastrModule.forRoot(),
     BrowserAnimationsModule,
     RouterModule.forRoot(routes),
-    ManageDatasetsComponent
+    ManageDatasetsComponent,
+    DragDropModule,
+    MatChipsModule
   ],
   providers: [StorageService, provideCharts(withDefaultRegisterables())],
 })

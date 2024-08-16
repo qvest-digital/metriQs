@@ -225,4 +225,10 @@ export class StorageService {
     this.dbService.selectDb(dataSetDbConfig.name);
     return firstValueFrom(this.dbService.getAll<Status>(TableNames.STATUS));
   }
+
+  updateStatus(status: Status) {
+    this.dbService.selectDb(dataSetDbConfig.name);
+    return firstValueFrom(this.dbService.update<Status>(TableNames.STATUS, status));
+
+  }
 }

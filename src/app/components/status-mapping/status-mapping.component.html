@@ -1,0 +1,21 @@
+<div class="status-mapping-container">
+  <div class="category-column">
+    <h3>Uncategorized</h3>
+    <div cdkDropList id="uncategorized" [cdkDropListData]="getUncategorizedStatuses()"
+         [cdkDropListConnectedTo]="connectedDropLists" class="status-list" (cdkDropListDropped)="drop($event, '')">
+      <div *ngFor="let status of getUncategorizedStatuses()" cdkDrag class="status-chip">
+        <mat-chip>{{ status.name }}</mat-chip>
+      </div>
+    </div>
+  </div>
+  <div *ngFor="let category of statusCategories" class="category-column">
+    <h3>{{ category }}</h3>
+    <div cdkDropList [id]="category" [cdkDropListData]="getStatusesByCategory(category)"
+         [cdkDropListConnectedTo]="connectedDropLists" class="status-list"
+         (cdkDropListDropped)="drop($event, category)">
+      <div *ngFor="let status of getStatusesByCategory(category)" cdkDrag class="status-chip">
+        <mat-chip>{{ status.name }}</mat-chip>
+      </div>
+    </div>
+  </div>
+</div>
