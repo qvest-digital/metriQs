@@ -10,12 +10,9 @@
         <mat-card-content class="status-card-content">
           <mat-chip-set
             class="example-chip"
-            cdkDropList
-            cdkDropListOrientation="horizontal"
-            (cdkDropListDropped)="drop($event)"
           >
             @for (status of availableStatuses(); track status.name) {
-              <mat-chip-option selected="{{status.selected}}" class="example-box" cdkDrags> {{ status.name }}
+              <mat-chip-option class="example-box" cdkDrag> {{ status.name }}
               </mat-chip-option>
             }
           </mat-chip-set>

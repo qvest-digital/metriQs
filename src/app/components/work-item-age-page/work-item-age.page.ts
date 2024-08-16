@@ -1,17 +1,14 @@
 import {ChangeDetectionStrategy, Component, OnInit, signal, ViewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {JiraDataCenterService} from '../../services/jira-data-center.service';
 import {StorageService} from "../../services/storage.service";
 import {ToastrService} from "ngx-toastr";
 import {WorkItemAgeChartComponent} from "../work-item-age-chart/work-item-age-chart.component";
-import {BusinessLogicService} from "../../services/business-logic.service";
-import {JiraCloudService} from "../../services/jira-cloud.service";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {MatGridList, MatGridTile} from "@angular/material/grid-list";
 import {MatIcon} from "@angular/material/icon";
 import {MatChip, MatChipsModule} from "@angular/material/chips";
 import {NgForOf} from "@angular/common";
-import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
 import {
   MatCell,
   MatCellDef,
@@ -26,11 +23,7 @@ import {
   MatTableDataSource
 } from "@angular/material/table";
 import {WorkItemAgeEntry} from "../../models/workItemAgeEntry";
-
-export interface Status {
-  name: string;
-  selected: boolean;
-}
+import {Status, StatusCategory} from "../../models/status";
 
 @Component({
   selector: 'app-work-item-age-page',
@@ -75,32 +68,37 @@ export class WorkItemAgePage implements OnInit {
 
   public displayedColumns: string[] = ['issueKey', 'status'];
 
-  constructor(private jiraDataCenterService: JiraDataCenterService,
-              private jiraCloudService: JiraCloudService,
-              private databaseService: StorageService, private toastr: ToastrService,
-              private workItemAgeService: BusinessLogicService) {
+  constructor(private databaseService: StorageService, private toastr: ToastrService) {
   }
 
-  readonly availableStatuses = signal<Status[]>([
-    {name: 'todo', selected: false},
-    {name: 'in progress', selected: true},
-    {name: 'review', selected: false},
-    {name: 'done', selected: false},]);
+  availableStatuses = signal<Status[]>([]);
 
 
-  drop(event: CdkDragDrop<Status[]>) {
-    this.availableStatuses.update(status => {
-      moveItemInArray(status, event.previousIndex, event.currentIndex);
-      return [...status];
-    });
-  }
-
-  ngOnInit(): void {
-    this.loadData();
+  async ngOnInit() {
+    await this.loadData();
   }
 
   async loadData() {
-    this.workItemAgeDataSource.data = await this.databaseService.getWorkItemAgeData();
+    let data = await this.databaseService.getWorkItemAgeData();
+
+    const statusInProgress = await this.databaseService.getAllStatuses().then(statuses => {
+      return statuses.filter(status => status.category === StatusCategory.InProgress);
+    })
+
+    // Filter the work items that are in progress
+    const inProgressStatusIds = statusInProgress.map(status => status.externalId);
+    data = data.filter(wIEntry =>
+      inProgressStatusIds.includes(wIEntry.externalStatusId)
+    );
+
+    this.availableStatuses.set(statusInProgress);
+
+    // Set the workItemAgeData in the chart component
+    if (this.workItemAgeChartComponent) {
+      //FIXME: löst kein ngChange aus
+      this.workItemAgeChartComponent.workItemAgeData = data;
+      this.workItemAgeChartComponent.updateChartData();
+    }
   }
 
 

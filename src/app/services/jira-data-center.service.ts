@@ -114,6 +114,7 @@ export class JiraDataCenterService implements OnInit {
         dataSetId: config.id!,
         createdDate: new Date(issue.fields.created),
         status: issue.fields.status!.name!,
+        externalStatusId: Number.parseInt(issue.fields.status!.id!),
         url: issue.self!,
       }));
 

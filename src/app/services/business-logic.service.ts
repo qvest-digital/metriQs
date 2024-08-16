@@ -19,16 +19,23 @@ export class BusinessLogicService {
     const issueHistories: IssueHistory[] = [];
 
     changelog.histories.forEach((history: any) => {
-      history.items!.forEach((item: { fromString: any; toString: any; field: any; }) => {
+      history.items!.forEach((item: {
+        fromString: string;
+        toString: string;
+        field: string;
+        from: string,
+        to: string
+      }) => {
         const issueHistory: IssueHistory = {
           issueId: issue.id!,
           datasetId: issue.dataSetId,
           fromValue: item.fromString || '',
+          fromValueId: Number.parseInt(item.from),
+          toValueId: Number.parseInt(item.to),
           toValue: item.toString || '',
           field: item.field || '',
           createdDate: new Date(history.created!)
         };
-        console.log('issueHistory', history);
         issueHistories.push(issueHistory);
       });
     });
@@ -43,6 +50,7 @@ export class BusinessLogicService {
         issueId: issue.id!,
         issueKey: issue.issueKey,
         status: issue.status,
+        externalStatusId: issue.externalStatusId,
         title: issue.title,
         age: this.calculateAge(issue.createdDate, new Date()),
       };
@@ -101,18 +109,19 @@ export class BusinessLogicService {
     issues.forEach(issue => {
       const status: Status = {
         dataSetId: issue.dataSetId,
-        name: issue.status
+        name: issue.status,
+        externalId: issue.externalStatusId
       };
       statuses.add(status);
     });
 
     issueHistories.forEach(history => {
       if (history.field === 'status') {
-        if (!this.stateExistsInSet(statuses, history.fromValue)) {
+        if (!this.stateExistsInSet(statuses, history.fromValueId!)) {
 
-          statuses.add({dataSetId: history.datasetId, name: history.fromValue});
-        } else if (!this.stateExistsInSet(statuses, history.toValue)) {
-          statuses.add({dataSetId: history.datasetId, name: history.toValue});
+          statuses.add({dataSetId: history.datasetId, name: history.fromValue, externalId: history.fromValueId!});
+        } else if (!this.stateExistsInSet(statuses, history.toValueId!)) {
+          statuses.add({dataSetId: history.datasetId, name: history.toValue, externalId: history.toValueId!});
         }
       }
     });
@@ -120,9 +129,9 @@ export class BusinessLogicService {
     return Array.from(statuses);
   }
 
-  private stateExistsInSet(set: Set<Status>, name: string): boolean {
+  private stateExistsInSet(set: Set<Status>, externalId: number): boolean {
     for (let item of set) {
-      if (item.name === name) {
+      if (item.externalId === externalId) {
         return true; // Object with the same key already exists
       }
     }
@@ -132,7 +141,7 @@ export class BusinessLogicService {
 
   filterOutMappedStatuses(newStatesFound: Status[], allStatuses: Status[]) {
     return newStatesFound.filter(newState =>
-      !allStatuses.some(existingState => existingState.category === newState.category)
+      !allStatuses.some(existingState => existingState.category === newState.category || existingState.externalId === newState.externalId)
     );
   }
 }

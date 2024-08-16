@@ -4,5 +4,6 @@ export interface WorkItemAgeEntry {
   title: string;
   age: number;
   status: string;
+  externalStatusId: number;
   id?: number;
 }

@@ -11,4 +11,5 @@ export interface Status {
   color?: string;
   order?: number;
   category?: StatusCategory;
+  externalId: number;
 }

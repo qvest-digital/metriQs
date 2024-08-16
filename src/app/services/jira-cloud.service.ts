@@ -82,7 +82,7 @@ export class JiraCloudService implements OnInit {
     dataset.cloudId = resourceId;
     await this.storageService.updateDataset(dataset);
     this.toastr.success('Successfully logged in to Jira');
-    this.router.navigate([MANAGE_DATASETS, appSettings.selectedDatasetId]);
+    await this.router.navigate([MANAGE_DATASETS, appSettings.selectedDatasetId]);
   }
 
   async getAndSaveIssues(dataSetId: number): Promise<Issue[]> {
@@ -105,7 +105,7 @@ export class JiraCloudService implements OnInit {
         });
 
         //if response successfully received, clear all data
-        await this.storageService.clearIssueData();
+        await this.storageService.clearAllData();
 
         // Manually map the response to Issue objects
         const issues: Issue[] = [];
@@ -116,6 +116,7 @@ export class JiraCloudService implements OnInit {
             dataSetId: dataset.id!,
             createdDate: new Date(issue.fields.created),
             status: issue.fields.status!.name!,
+            externalStatusId: Number.parseInt(issue.fields.status!.id!),
             url: issue.self!,
           };
           i = await this.storageService.addissue(i);
@@ -133,7 +134,6 @@ export class JiraCloudService implements OnInit {
         const allHistories = await this.storageService.getAllIssueHistories();
 
         let newStatesFound = this.businessLogicService.findAllNewStatuses(issues, allHistories);
-
         const allStatuses = await this.storageService.getAllStatuses();
 
         newStatesFound = this.businessLogicService.filterOutMappedStatuses(newStatesFound, allStatuses);

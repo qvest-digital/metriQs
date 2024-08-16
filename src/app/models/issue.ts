@@ -4,6 +4,7 @@ export interface Issue {
   title: string;
   createdDate: Date;
   status: string;
+  externalStatusId: number;
   id?: number;
   url: string;
 }

@@ -1,24 +1,21 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
-import { StorageService } from "../../services/storage.service";
-import { NgForOf } from "@angular/common";
+import {Component, Input, OnInit, ViewChild, OnChanges, SimpleChanges} from '@angular/core';
 import { BaseChartDirective } from "ng2-charts";
-import {Chart, ChartConfiguration, ChartData, ChartType, TooltipItem} from 'chart.js';
-import {BusinessLogicService} from "../../services/business-logic.service";
-import {ToastrService} from "ngx-toastr";
+import {Chart, ChartConfiguration, ChartData, ChartType} from 'chart.js';
+import {ChangeDetectorRef} from '@angular/core';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import {WorkItemAgeEntry} from "../../models/workItemAgeEntry";
 
 @Component({
   selector: 'app-work-item-age-chart',
   standalone: true,
   imports: [
-    NgForOf,
     BaseChartDirective
   ],
   templateUrl: './work-item-age-chart.component.html',
   styleUrl: './work-item-age-chart.component.scss'
 })
-export class WorkItemAgeChartComponent implements OnInit {
-  @Input() workItemAgeData: any;
+export class WorkItemAgeChartComponent implements OnInit, OnChanges {
+  @Input() workItemAgeData: WorkItemAgeEntry[] | undefined;
 
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
@@ -77,7 +74,8 @@ export class WorkItemAgeChartComponent implements OnInit {
         title: {
           display: true,
           text: 'Status'
-        }
+        },
+        offset: true // Add space between the first entry and the Y-axis
       },
       y: {
         title: {
@@ -87,7 +85,6 @@ export class WorkItemAgeChartComponent implements OnInit {
       }
     }
   };
-
 
   public scatterChartData: ChartData<'scatter', { x: string, y: number }[]> = {
     datasets: [
@@ -105,28 +102,34 @@ export class WorkItemAgeChartComponent implements OnInit {
     ],
   };
 
-  constructor(private databaseService: StorageService, private workItemService: BusinessLogicService, private toasts: ToastrService) {
+  constructor(private cdr: ChangeDetectorRef) {
     Chart.register(annotationPlugin);
   }
 
-  async loadData() {
-    const items = await this.databaseService.getWorkItemAgeData();
-    items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
-    this.scatterChartData.datasets[0].data = items.map((item, index) => ({
-      x: item.status,
-      y: item.age, // Assuming age is a numeric value representing the age of the work item
-      issueKey: item.issueKey, // Add issueKey to the data point
-      status: item.status
-    }));
-    this.chart?.update();
-    this.toasts.success('Successfully loaded work item age data');
-  }
-
-  refreshChart() {
-    this.chart?.update();
-  }
-
   ngOnInit(): void {
-    this.loadData();
+    this.updateChartData();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['workItemAgeData']) {
+      this.updateChartData();
+    }
+  }
+
+  updateChartData() {
+    if (this.workItemAgeData) {
+      this.scatterChartData.datasets[0].data = this.workItemAgeData.map((item: WorkItemAgeEntry) => ({
+        x: item.status,
+        y: item.age,
+        issueKey: item.issueKey,
+        status: item.status
+      }));
+      this.chart?.update();
+      this.cdr.detectChanges();
+    }
+  }
+
+  updateChart() {
+    this.chart?.update();
   }
 }

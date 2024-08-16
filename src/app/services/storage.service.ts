@@ -187,12 +187,10 @@ export class StorageService {
 
   async clearAllData() {
     this.dbService.selectDb(dbConfigIssueData.name);
-    firstValueFrom(this.dbService.deleteObjectStore(TableNames.ISSUE_HISTORY));
-    firstValueFrom(this.dbService.deleteObjectStore(TableNames.ISSUES));
-    firstValueFrom(this.dbService.deleteObjectStore(TableNames.WORK_ITEM_AGE));
-    firstValueFrom(this.dbService.deleteObjectStore(TableNames.CYCLE_TIME));
-    this.dbService.deleteDatabase()
-
+    await firstValueFrom(this.dbService.clear(TableNames.ISSUE_HISTORY));
+    await firstValueFrom(this.dbService.clear(TableNames.ISSUES));
+    await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
+    await firstValueFrom(this.dbService.clear(TableNames.CYCLE_TIME));
   }
 
   async addIssueHistories(histories: IssueHistory[]): Promise<number[]> {
