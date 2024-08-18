@@ -24,7 +24,7 @@ import {
 } from "@angular/material/table";
 import {WorkItemAgeEntry} from "../../models/workItemAgeEntry";
 import {Status, StatusCategory} from "../../models/status";
-import {SmartTableComponent} from "../status-history-table/status-history-table.component";
+import {StatusHistoryTableComponent} from "../status-history-table/status-history-table.component";
 
 @Component({
   selector: 'app-work-item-age-page',
@@ -55,7 +55,7 @@ import {SmartTableComponent} from "../status-history-table/status-history-table.
     MatHeaderCellDef,
     MatRow,
     MatRowDef,
-    SmartTableComponent
+    StatusHistoryTableComponent
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

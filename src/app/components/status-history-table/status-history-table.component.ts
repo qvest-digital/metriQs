@@ -1,23 +1,20 @@
-// src/app/components/status-history-table/status-history-table.component.ts
-import {Component, OnInit} from '@angular/core';
+import {Component, LOCALE_ID, OnInit, ViewChild} from '@angular/core';
 import {
-  MatCell, MatCellDef,
+  MatCell,
+  MatCellDef,
   MatColumnDef,
   MatHeaderCell,
   MatHeaderCellDef, MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef,
   MatTable,
   MatTableDataSource
 } from '@angular/material/table';
-import {MatFormField} from "@angular/material/form-field";
+import {MatSort} from '@angular/material/sort';
+import {IssueHistory} from "../../models/issueHistory";
+import {StorageService} from "../../services/storage.service";
+import {BusinessLogicService} from "../../services/business-logic.service";
 import {MatInput} from "@angular/material/input";
 import {DatePipe, registerLocaleData} from "@angular/common";
 import localeDe from '@angular/common/locales/de';
-import {IssueHistory} from "../../models/issueHistory";
-import {Issue} from "../../models/issue";
-import {StorageService} from "../../services/storage.service";
-import {BusinessLogicService} from "../../services/business-logic.service";
-
-registerLocaleData(localeDe);
 
 interface CombinedIssueHistory {
   issueId: number;
@@ -30,6 +27,8 @@ interface CombinedIssueHistory {
   field: string;
   historyCreatedDate: Date;
   duration: string;
+
+  [key: string]: any;
 }
 
 @Component({
@@ -37,28 +36,30 @@ interface CombinedIssueHistory {
   templateUrl: './status-history-table.component.html',
   standalone: true,
   imports: [
-    MatFormField,
     MatInput,
+    MatHeaderCell,
     MatTable,
     MatColumnDef,
-    MatHeaderCell,
     MatCell,
-    MatHeaderCellDef,
     MatCellDef,
+    MatHeaderCellDef,
+    DatePipe,
     MatHeaderRow,
     MatRow,
     MatHeaderRowDef,
-    MatRowDef,
-    DatePipe
+    MatRowDef
   ],
   styleUrls: ['./status-history-table.component.scss'],
-  providers: [{provide: DatePipe, useClass: DatePipe, deps: []}]
+  providers: [{provide: LOCALE_ID, useValue: 'de'}]
 })
-export class SmartTableComponent implements OnInit {
+export class StatusHistoryTableComponent implements OnInit {
   displayedColumns: string[] = ['issueKey', 'fromValue', 'toValue', 'historyCreatedDate', 'duration'];
   dataSource: MatTableDataSource<CombinedIssueHistory> = new MatTableDataSource<CombinedIssueHistory>();
 
+  @ViewChild(MatSort) sort: MatSort | undefined;
+
   constructor(private storageService: StorageService, private businessLogic: BusinessLogicService) {
+    registerLocaleData(localeDe);
   }
 
   async ngOnInit() {
@@ -88,11 +89,21 @@ export class SmartTableComponent implements OnInit {
     });
 
     this.dataSource.data = combinedData;
+    this.dataSource.sort = this.sort!;
   }
 
   calculateDuration(historyDate: Date, issueDate: Date): string {
     const duration = Math.abs(historyDate.getTime() - issueDate.getTime());
     const days = Math.ceil(duration / (1000 * 3600 * 24));
     return `${days} days`;
+  }
+
+  applyFilter(event: Event, column: string) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filterPredicate = (data: CombinedIssueHistory, filter: string) => {
+      const textToSearch = data[column] && data[column].toString().toLowerCase() || '';
+      return textToSearch.indexOf(filter.toLowerCase()) !== -1;
+    };
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 }
