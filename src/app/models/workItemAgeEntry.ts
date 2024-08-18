@@ -6,4 +6,5 @@ export interface WorkItemAgeEntry {
   status: string;
   externalStatusId: number;
   id?: number;
+  inProgressStatusDate: Date;
 }

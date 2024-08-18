@@ -53,7 +53,8 @@ export const dbConfigIssueData: DBConfig = {
     store: TableNames.ISSUES,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
       {name: 'dataSetId', keypath: 'dataSetId', options: { unique: false}},
-      {name: 'issueKey', keypath: 'key', options: {unique: false}},
+      {name: 'issueKey', keypath: 'issueKey', options: {unique: false}},
+      {name: 'id', keypath: 'id', options: {unique: false}},
     ]
   }, {
       store: TableNames.WORK_ITEM_AGE,
@@ -65,6 +66,7 @@ export const dbConfigIssueData: DBConfig = {
     store: TableNames.ISSUE_HISTORY,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
       {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+      {name: 'field', keypath: 'field', options: {unique: false}},
     ]
   },
     {
@@ -228,5 +230,21 @@ export class StorageService {
     this.dbService.selectDb(dataSetDbConfig.name);
     return firstValueFrom(this.dbService.update<Status>(TableNames.STATUS, status));
 
+  }
+
+  getAllIssueHistoriesForIssue(issue: Issue) {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'issueId', IDBKeyRange.only(issue.id)));
+  }
+
+  getAllIssueHistoriesForStatuses() {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'field', IDBKeyRange.only("status")));
+  }
+
+  async getIssuesByIds(issuesIds: number[]): Promise<Issue[]> {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    const promises = issuesIds.map(id => firstValueFrom(this.dbService.getByID<Issue>(TableNames.ISSUES, id)));
+    return Promise.all(promises);
   }
 }

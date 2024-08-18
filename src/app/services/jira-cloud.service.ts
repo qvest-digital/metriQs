@@ -101,7 +101,7 @@ export class JiraCloudService implements OnInit {
         const response = await client.issueSearch.searchForIssuesUsingJqlPost({
           jql: dataset.jql,
           fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
-          expand: ['changelog'],
+          expand: ['changelog', 'names'],
         });
 
         //if response successfully received, clear all data
@@ -125,7 +125,7 @@ export class JiraCloudService implements OnInit {
           const issueHistories = this.businessLogicService.mapChangelogToIssueHistory(i, issue.changelog as Version2.Version2Models.Changelog);
           await this.storageService.addIssueHistories(issueHistories);
 
-          const wiAge = this.businessLogicService.map2WorkItemAgeEntries([i]);
+          const wiAge = await this.businessLogicService.map2WorkItemAgeEntries([i]);
           await this.storageService.addWorkItemAgeData(wiAge);
 
           const cycleTime = this.businessLogicService.map2CycleTimeEntries(issueHistories, i);

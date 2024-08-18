@@ -24,6 +24,7 @@ import {
 } from "@angular/material/table";
 import {WorkItemAgeEntry} from "../../models/workItemAgeEntry";
 import {Status, StatusCategory} from "../../models/status";
+import {SmartTableComponent} from "../status-history-table/status-history-table.component";
 
 @Component({
   selector: 'app-work-item-age-page',
@@ -53,7 +54,8 @@ import {Status, StatusCategory} from "../../models/status";
     MatCellDef,
     MatHeaderCellDef,
     MatRow,
-    MatRowDef
+    MatRowDef,
+    SmartTableComponent
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,7 +66,7 @@ export class WorkItemAgePage implements OnInit {
 
   public statusDataSource = new MatTableDataSource<any>();
   public workItemAgeDataSource = new MatTableDataSource<WorkItemAgeEntry>();
-  public workItemAgeColumns: string[] = ['issueId', 'issueKey', 'title', 'age', 'status'];
+  public workItemAgeColumns: string[] = ['issueId', 'issueKey', 'title', 'inProgressStatusDate', 'age', 'status'];
 
   public displayedColumns: string[] = ['issueKey', 'status'];
 
@@ -99,6 +101,7 @@ export class WorkItemAgePage implements OnInit {
       this.workItemAgeChartComponent.workItemAgeData = data;
       this.workItemAgeChartComponent.updateChartData();
     }
+    this.workItemAgeDataSource.data = data;
   }
 
 

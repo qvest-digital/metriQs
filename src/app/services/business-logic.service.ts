@@ -5,18 +5,42 @@ import {StorageService} from "./storage.service";
 import {Version3} from "jira.js";
 import {IssueHistory} from "../models/issueHistory";
 import {CycletimeEntry} from "../models/cycletimeEntry";
-import {Status} from "../models/status";
+import {Status, StatusCategory} from "../models/status";
 
 @Injectable({
   providedIn: 'root'
 })
 export class BusinessLogicService {
 
-  constructor() {
+  constructor(private storageService: StorageService) {
+  }
+
+  findFirstStatusChange(changelog: any): any | undefined {
+    const statusHistories = changelog.histories
+      .filter((history: any) => history.items.some((item: any) => item.field === 'status'))
+      .sort((a: any, b: any) => new Date(a.created).getTime() - new Date(b.created).getTime());
+
+    return statusHistories.length > 0 ? statusHistories[0] : undefined;
   }
 
   public mapChangelogToIssueHistory(issue: Issue, changelog: any): IssueHistory[] {
     const issueHistories: IssueHistory[] = [];
+
+    const firstStatusChange = this.findFirstStatusChange(changelog);
+    if (firstStatusChange) {
+      const findStatusHistory = changelog.histories.find((history: any) => history.items.some((item: any) => item.field === 'status'));
+      // Add a separate IssueHistory entry for the issue with createdDate
+      const issueCreatedHistory: IssueHistory = {
+        issueId: issue.id!,
+        datasetId: issue.dataSetId,
+        fromValue: '',
+        toValueId: Number.parseInt(findStatusHistory.items[0].from),
+        toValue: firstStatusChange.items[0].fromString,
+        field: 'status',
+        createdDate: new Date(issue.createdDate!)
+      };
+      issueHistories.push(issueCreatedHistory);
+    }
 
     changelog.histories.forEach((history: any) => {
       history.items!.forEach((item: {
@@ -43,21 +67,45 @@ export class BusinessLogicService {
   }
 
 
-  map2WorkItemAgeEntries(issues: Issue[]): WorkItemAgeEntry[] {
+  async map2WorkItemAgeEntries(issues: Issue[]) {
     const workItemAgeEntries: WorkItemAgeEntry[] = [];
     for (const issue of issues) {
+
+      const historyEntry = await this.findFirstInProgressStatusChange(issue);
+      if (!historyEntry) {
+        continue;
+      }
       const workItemAgeEntry: WorkItemAgeEntry = {
         issueId: issue.id!,
         issueKey: issue.issueKey,
         status: issue.status,
         externalStatusId: issue.externalStatusId,
         title: issue.title,
-        age: this.calculateAge(issue.createdDate, new Date()),
+        inProgressStatusDate: historyEntry.createdDate,
+        age: this.calculateAge(historyEntry.createdDate, new Date()),
       };
       workItemAgeEntries.push(workItemAgeEntry);
     }
     return workItemAgeEntries;
 
+  }
+
+  async getAllInProgressStatuses(): Promise<Status[]> {
+    const allStatuses = await this.storageService.getAllStatuses();
+    return allStatuses.filter(status => status.category === StatusCategory.InProgress);
+  }
+
+  public async findFirstInProgressStatusChange(issue: Issue) {
+    const allStatuses = await this.storageService.getAllStatuses();
+    const inProgressStatusIds = allStatuses
+      .filter(status => status.category === StatusCategory.InProgress)
+      .map(status => status.externalId);
+
+    const issueHistories = await this.storageService.getAllIssueHistoriesForIssue(issue);
+
+    return issueHistories
+      .filter(history => history.field === 'status' && inProgressStatusIds.includes(history.toValueId!))
+      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())[0];
   }
 
   calculateAge(createdDate: Date, currentDate: Date): number {
@@ -143,5 +191,9 @@ export class BusinessLogicService {
     return newStatesFound.filter(newState =>
       !allStatuses.some(existingState => existingState.category === newState.category || existingState.externalId === newState.externalId)
     );
+  }
+
+  removeDuplicates<T>(array: T[]): T[] {
+    return Array.from(new Set(array));
   }
 }
