@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import {Issue} from "../models/issue";
 import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {StorageService} from "./storage.service";
-import {Version3} from "jira.js";
 import {IssueHistory} from "../models/issueHistory";
 import {CycletimeEntry} from "../models/cycletimeEntry";
 import {Status, StatusCategory} from "../models/status";
@@ -195,5 +194,16 @@ export class BusinessLogicService {
 
   removeDuplicates<T>(array: T[]): T[] {
     return Array.from(new Set(array));
+  }
+
+  computePercentile(cycleTimes: number[], percentile: number): number {
+    // Sort the cycle times array
+    const sortedCycleTimes = [...cycleTimes].sort((a, b) => a - b);
+
+    // Calculate the index for the given percentile
+    const index = Math.ceil((percentile / 100) * sortedCycleTimes.length) - 1;
+
+    // Return the cycle time at the calculated index
+    return sortedCycleTimes[index];
   }
 }

@@ -16,6 +16,8 @@ import {BusinessLogicService} from "../../services/business-logic.service";
   styleUrl: './cycle-time-scatterplot.component.scss'
 })
 export class CycleTimeScatterplotComponent {
+  percentilValue = 23;
+
   @Input() workItemAgeData: any;
 
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
@@ -49,10 +51,10 @@ export class CycleTimeScatterplotComponent {
         annotations: {
           line1: {
             type: 'line',
-            yMin: 18,
-            yMax: 18,
+            yMin: 0,
+            yMax: 0,
             borderColor: 'red',
-            borderWidth: 2,
+            borderWidth: 1,
             label: {
               content: 'SLE Threshold (80%)',
               position: 'center',
@@ -91,7 +93,7 @@ export class CycleTimeScatterplotComponent {
     ],
   };
 
-  constructor(private databaseService: StorageService, private workItemService: BusinessLogicService, private toasts: ToastrService) {
+  constructor(private databaseService: StorageService, private businessLogicService: BusinessLogicService, private toasts: ToastrService) {
     Chart.register(annotationPlugin);
   }
 
@@ -103,6 +105,8 @@ export class CycleTimeScatterplotComponent {
       y: item.cycleTime, // Assuming age is a numeric value representing the age of the work item
       issueKey: item.issueKey // Add issueKey to the data point
     }));
+    this.percentilValue = this.businessLogicService.computePercentile(items.map(item => item.cycleTime), 80);
+    this.updateAnnotationLine(this.percentilValue);
     this.chart?.update();
     this.toasts.success('Successfully loaded cycle time data');
   }
@@ -113,5 +117,14 @@ export class CycleTimeScatterplotComponent {
 
   ngOnInit(): void {
     this.loadData();
+  }
+
+  updateAnnotationLine(newValue: number) {
+    const annotations: any = this.scatterChartOptions!.plugins!.annotation!.annotations;
+    if (annotations.line1) {
+      annotations.line1.yMin = newValue;
+      annotations.line1.yMax = newValue;
+      this.chart?.update();
+    }
   }
 }
