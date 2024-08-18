@@ -15,7 +15,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {StorageService} from "../../services/storage.service";
 import {Dataset, DataSetType} from "../../models/dataset";
 import {ToastrService} from "ngx-toastr";
-import {CYCLE_TIME, DASHBOARD, WORK_ITEM_AGE} from "../../app-routing.module";
+import {CYCLE_TIME, DASHBOARD, THROUGHPUT, WORK_ITEM_AGE} from "../../app-routing.module";
 import {JiraDataCenterService} from "../../services/jira-data-center.service";
 import {JiraCloudService} from "../../services/jira-cloud.service";
 import {WorkItemAgeService} from "../../services/work-item-age.service";
@@ -147,4 +147,6 @@ export class LayoutComponent implements OnInit {
   clearDatabase() {
     this.storageService.clearAllData();
   }
+
+    protected readonly THROUGHPUT = THROUGHPUT;
 }

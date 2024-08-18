@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import { StorageService } from '../../services/storage.service';
 import { Dataset } from '../../models/dataset';
 
@@ -8,7 +8,10 @@ import { Dataset } from '../../models/dataset';
   selector: 'app-edit-dataset',
   templateUrl: './edit-dataset.component.html',
   standalone: true,
-  styleUrls: ['./edit-dataset.component.css']
+  imports: [
+    ReactiveFormsModule
+  ],
+  styleUrls: ['./edit-dataset.component.scss']
 })
 export class EditDatasetComponent implements OnInit {
   datasetForm: FormGroup;
