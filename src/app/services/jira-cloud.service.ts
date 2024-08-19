@@ -8,8 +8,8 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {environment} from "../../environments/environment";
 import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {CALLBACK_JIRA_CLOUD, DASHBOARD} from "../app-routing.module";
-import {WorkItemAgeService} from "./work-item-age.service";
+import {CALLBACK_JIRA_CLOUD, DASHBOARD, MANAGE_DATASETS} from "../app-routing.module";
+import {BusinessLogicService} from "./business-logic.service";
 
 /*
 see https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/
@@ -28,7 +28,7 @@ export class JiraCloudService implements OnInit {
     private storageService: StorageService,
     private toastr: ToastrService,
     private route: ActivatedRoute, private router: Router,
-    private workItemAgeService: WorkItemAgeService
+    private businessLogicService: BusinessLogicService
   ) {
   }
 
@@ -82,7 +82,7 @@ export class JiraCloudService implements OnInit {
     dataset.cloudId = resourceId;
     await this.storageService.updateDataset(dataset);
     this.toastr.success('Successfully logged in to Jira');
-    this.router.navigate([DASHBOARD]);
+    await this.router.navigate([MANAGE_DATASETS, appSettings.selectedDatasetId]);
   }
 
   async getAndSaveIssues(dataSetId: number): Promise<Issue[]> {
@@ -101,11 +101,11 @@ export class JiraCloudService implements OnInit {
         const response = await client.issueSearch.searchForIssuesUsingJqlPost({
           jql: dataset.jql,
           fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
-          expand: ['changelog'],
+          expand: ['changelog', 'names'],
         });
 
         //if response successfully received, clear all data
-        await this.storageService.clearIssueData();
+        await this.storageService.clearAllData();
 
         // Manually map the response to Issue objects
         const issues: Issue[] = [];
@@ -116,24 +116,28 @@ export class JiraCloudService implements OnInit {
             dataSetId: dataset.id!,
             createdDate: new Date(issue.fields.created),
             status: issue.fields.status!.name!,
+            externalStatusId: Number.parseInt(issue.fields.status!.id!),
             url: issue.self!,
           };
           i = await this.storageService.addissue(i);
 
 
-          const issueHistories = this.workItemAgeService.mapChangelogToIssueHistory(i.id!, issue.changelog as Version2.Version2Models.Changelog);
+          const issueHistories = this.businessLogicService.mapChangelogToIssueHistory(i, issue.changelog as Version2.Version2Models.Changelog);
           await this.storageService.addIssueHistories(issueHistories);
 
-          const wiAge = this.workItemAgeService.map2WorkItemAgeEntries([i]);
+          const wiAge = await this.businessLogicService.map2WorkItemAgeEntries([i]);
           await this.storageService.addWorkItemAgeData(wiAge);
 
-          const cycleTime = this.workItemAgeService.map2CycleTimeEntries(issueHistories, i);
+          const cycleTime = this.businessLogicService.map2CycleTimeEntries(issueHistories, i);
           await this.storageService.addCycleTimeEntries(cycleTime);
         }
         const allHistories = await this.storageService.getAllIssueHistories();
 
-        const status = this.workItemAgeService.findAllStatuses(issues, allHistories);
-        await this.storageService.addStatuses(status);
+        let newStatesFound = this.businessLogicService.findAllNewStatuses(issues, allHistories);
+        const allStatuses = await this.storageService.getAllStatuses();
+
+        newStatesFound = this.businessLogicService.filterOutMappedStatuses(newStatesFound, allStatuses);
+        await this.storageService.addStatuses(newStatesFound);
 
         return issues;
       } catch (error) {

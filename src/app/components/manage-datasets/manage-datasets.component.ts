@@ -10,8 +10,10 @@ import { NgForOf, NgIf } from "@angular/common";
 import { MatInput } from "@angular/material/input";
 import { MatSelect, MatOption } from "@angular/material/select";
 import { StorageService } from '../../services/storage.service';
-import { Dataset, DataSetType } from '../../models/dataset';
+import {Dataset} from '../../models/dataset';
 import {LayoutComponent} from "../layout/layout.component";
+import {CREATE_DATASETS, MANAGE_DATASETS} from "../../app-routing.module";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-manage-datasets',
@@ -37,44 +39,17 @@ import {LayoutComponent} from "../layout/layout.component";
 })
 export class ManageDatasetsComponent implements OnInit {
   datasets: Dataset[] = [];
-  editMode: boolean = false;
-  datasetToEdit?: Dataset;
-  datasetForm: FormGroup;
-  datasetTypes = Object.values(DataSetType);
 
   constructor(
     private storageService: StorageService,
     private fb: FormBuilder,
-    private layoutComponent: LayoutComponent
+    private layoutComponent: LayoutComponent,
+    private router: Router
   ) {
-    this.datasetForm = this.fb.group({
-      name: ['', Validators.required],
-      jql: ['', Validators.required],
-      baseUrl: ['', Validators.required],
-      type: [DataSetType.JIRA_CLOUD, Validators.required],
-      access_token: [''],
-      cloudId: ['']
-    });
   }
 
   async ngOnInit() {
     this.datasets = await this.storageService.getAllDatasets();
-  }
-
-  async onSubmit() {
-    if (this.datasetForm.valid) {
-      var dataset: Dataset = this.datasetForm.value;
-      if (this.editMode && this.datasetToEdit) {
-        dataset.id = this.datasetToEdit.id;
-        dataset = await this.storageService.updateDataset(dataset);
-      } else {
-        dataset = await this.storageService.addDataset(dataset);
-      }
-      this.datasets = await this.storageService.getAllDatasets();
-      await this.storageService.saveAppSettings({selectedDatasetId: dataset.id!});
-      this.resetForm();
-      this.layoutComponent.refreshDatasets(); // Refresh datasets in LayoutComponent
-    }
   }
 
   async removeDataset(dataset: Dataset) {
@@ -83,21 +58,10 @@ export class ManageDatasetsComponent implements OnInit {
   }
 
   editDataset(dataset: Dataset) {
-    this.editMode = true;
-    this.datasetToEdit = { ...dataset };
-    this.datasetForm.patchValue(dataset);
+    this.router.navigate([MANAGE_DATASETS, dataset.id]);
   }
 
-  cancelEdit() {
-    this.resetForm();
+  createDataset() {
+    this.router.navigate([CREATE_DATASETS]);
   }
-
-  private resetForm() {
-    this.editMode = false;
-    this.datasetToEdit = undefined;
-    this.datasetForm.reset({
-      type: DataSetType.JIRA_CLOUD
-    });
-  }
-
 }

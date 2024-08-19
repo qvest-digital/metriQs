@@ -18,7 +18,6 @@ import {ToastrService} from "ngx-toastr";
 import {CYCLE_TIME, DASHBOARD, THROUGHPUT, WORK_ITEM_AGE} from "../../app-routing.module";
 import {JiraDataCenterService} from "../../services/jira-data-center.service";
 import {JiraCloudService} from "../../services/jira-cloud.service";
-import {WorkItemAgeService} from "../../services/work-item-age.service";
 import {WorkItemAgeChartComponent} from "../work-item-age-chart/work-item-age-chart.component";
 
 @Component({
@@ -54,7 +53,6 @@ export class LayoutComponent implements OnInit {
     private toastr: ToastrService,
     private jiraDataCenterService: JiraDataCenterService,
     private jiraCloudService: JiraCloudService,
-    private workItemAgeService: WorkItemAgeService
   ) {
   }
 
@@ -88,9 +86,10 @@ export class LayoutComponent implements OnInit {
     });
   }
 
-  login() {
+  async login() {
     if (this.selectedDataset) {
       const selectedDataset = this.datasets.find(dataset => dataset.id === this.selectedDataset);
+      await this.storageService.saveAppSettings({selectedDatasetId: this.selectedDataset});
       if (selectedDataset) {
         if (selectedDataset.type === 'JIRA_CLOUD') {
           this.loginToJiraCloud();
@@ -126,9 +125,6 @@ export class LayoutComponent implements OnInit {
 
           await this.jiraCloudService.getAndSaveIssues(this.selectedDataset!);
           try {
-            //FIXME: this is not working
-            this.workItemAgeChartComponent?.loadData();
-            this.workItemAgeChartComponent?.refreshChart();
             if (!silent)
               this.toastr.success('Successfully fetched issues from Jira');
           } catch (error) {
@@ -140,8 +136,6 @@ export class LayoutComponent implements OnInit {
         }
       }
     }
-
-
   }
 
   clearDatabase() {

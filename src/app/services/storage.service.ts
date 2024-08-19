@@ -55,7 +55,8 @@ export const dbConfigIssueData: DBConfig = {
     store: TableNames.ISSUES,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
       {name: 'dataSetId', keypath: 'dataSetId', options: { unique: false}},
-      {name: 'issueKey', keypath: 'key', options: {unique: false}},
+      {name: 'issueKey', keypath: 'issueKey', options: {unique: false}},
+      {name: 'id', keypath: 'id', options: {unique: false}},
     ]
   }, {
       store: TableNames.WORK_ITEM_AGE,
@@ -67,6 +68,7 @@ export const dbConfigIssueData: DBConfig = {
     store: TableNames.ISSUE_HISTORY,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
       {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+      {name: 'field', keypath: 'field', options: {unique: false}},
     ]
   },
     {
@@ -86,8 +88,6 @@ export const dbConfigIssueData: DBConfig = {
 
 // Ahead of time compiles requires an exported function for factories
 export function migrationFactory() {
-  // The animal table was added with version 2 but none of the existing tables or data needed
-  // to be modified so a migrator for that version is not included.
   return {
     1: (db: any, transaction: { objectStore: (arg0: string) => any; }) => {
       const issues = transaction.objectStore(TableNames.ISSUES);
@@ -169,10 +169,9 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd(TableNames.WORK_ITEM_AGE, workItemAgeEntries));
   }
 
-  async getFirstDataset() {
+  async createDataset(newDataset: Dataset) {
     this.dbService.selectDb(dataSetDbConfig.name);
-    const datasets = await this.getAllDatasets();
-    return datasets[0];
+    return firstValueFrom(this.dbService.add<Dataset>(TableNames.DATASETS, newDataset));
   }
 
   getDataset(id: number): Promise<Dataset> {
@@ -199,7 +198,10 @@ export class StorageService {
 
   async clearAllData() {
     this.dbService.selectDb(dbConfigIssueData.name);
-    this.dbService.deleteDatabase();
+    await firstValueFrom(this.dbService.clear(TableNames.ISSUE_HISTORY));
+    await firstValueFrom(this.dbService.clear(TableNames.ISSUES));
+    await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
+    await firstValueFrom(this.dbService.clear(TableNames.CYCLE_TIME));
   }
 
   async addIssueHistories(histories: IssueHistory[]): Promise<number[]> {
@@ -235,5 +237,33 @@ export class StorageService {
   async addThroughputData(throughput: Throughput[]): Promise<number[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
     return firstValueFrom(this.dbService.bulkAdd<Throughput>(TableNames.THROUGHPUT, throughput));
+  }
+
+
+  getAllStatuses() {
+    this.dbService.selectDb(dataSetDbConfig.name);
+    return firstValueFrom(this.dbService.getAll<Status>(TableNames.STATUS));
+  }
+
+  updateStatus(status: Status) {
+    this.dbService.selectDb(dataSetDbConfig.name);
+    return firstValueFrom(this.dbService.update<Status>(TableNames.STATUS, status));
+
+  }
+
+  getAllIssueHistoriesForIssue(issue: Issue) {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'issueId', IDBKeyRange.only(issue.id)));
+  }
+
+  getAllIssueHistoriesForStatuses() {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'field', IDBKeyRange.only("status")));
+  }
+
+  async getIssuesByIds(issuesIds: number[]): Promise<Issue[]> {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    const promises = issuesIds.map(id => firstValueFrom(this.dbService.getByID<Issue>(TableNames.ISSUES, id)));
+    return Promise.all(promises);
   }
 }

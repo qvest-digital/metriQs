@@ -14,8 +14,8 @@ export const CALLBACK_JIRA_DATA_CENTER = 'callbackJiraDataCenter';
 export const DASHBOARD = 'dashboard';
 export const WORK_ITEM_AGE = 'work-item-age';
 export const CYCLE_TIME = 'cycle-time';
-export const MANAGE_DATASETS = 'manage-datasets';
-export const EDIT_DATASET = 'edit-dataset';
+export const MANAGE_DATASETS = 'datasets';
+export const CREATE_DATASETS = MANAGE_DATASETS + '/create';
 export const THROUGHPUT = 'troughput';
 
 export const routes: Routes = [
@@ -26,8 +26,8 @@ export const routes: Routes = [
   {path: WORK_ITEM_AGE, component: WorkItemAgePage},
   {path: THROUGHPUT, component: ThroughputPageComponent},
   {path: CYCLE_TIME, component: CycleTimePage},
-  {path: MANAGE_DATASETS, component: ManageDatasetsComponent},
-  {path: EDIT_DATASET+ '/:id', component: EditDatasetComponent }
+  {path: MANAGE_DATASETS + '/:id', component: EditDatasetComponent},
+  {path: CREATE_DATASETS, component: EditDatasetComponent},
 ];
 
 @NgModule({
