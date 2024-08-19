@@ -26,6 +26,7 @@ export const routes: Routes = [
   {path: WORK_ITEM_AGE, component: WorkItemAgePage},
   {path: THROUGHPUT, component: ThroughputPageComponent},
   {path: CYCLE_TIME, component: CycleTimePage},
+  {path: MANAGE_DATASETS, component: ManageDatasetsComponent},
   {path: MANAGE_DATASETS + '/:id', component: EditDatasetComponent},
   {path: CREATE_DATASETS, component: EditDatasetComponent},
 ];
