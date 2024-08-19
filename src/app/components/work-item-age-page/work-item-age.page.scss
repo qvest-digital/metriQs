@@ -26,3 +26,9 @@
   max-height: 400px; /* Adjust the height as needed */
   overflow-y: auto;
 }
+
+/* Add the following CSS to work-item-age.page.scss */
+.table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}

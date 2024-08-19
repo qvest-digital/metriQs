@@ -1,0 +1,46 @@
+<div class="table-container">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+    <!-- Ticket Key Column -->
+    <ng-container matColumnDef="issueKey">
+      <th mat-header-cell *matHeaderCellDef>
+        Ticket Key
+        <input matInput (keyup)="applyFilter($event, 'issueKey')" placeholder="Filter">
+      </th>
+      <td mat-cell *matCellDef="let element"> {{ element.issueKey }}</td>
+    </ng-container>
+    <!-- Status Column -->
+    <ng-container matColumnDef="fromValue">
+      <th mat-header-cell *matHeaderCellDef>
+        from Value
+        <input matInput (keyup)="applyFilter($event, 'fromValue')" placeholder="Filter">
+      </th>
+      <td mat-cell *matCellDef="let element"> {{ element.fromValue }}</td>
+    </ng-container>
+    <!-- To Value Column -->
+    <ng-container matColumnDef="toValue">
+      <th mat-header-cell *matHeaderCellDef>
+        To Value
+        <input matInput (keyup)="applyFilter($event, 'toValue')" placeholder="Filter">
+      </th>
+      <td mat-cell *matCellDef="let element"> {{ element.toValue }}</td>
+    </ng-container>
+    <!-- Timestamp Column -->
+    <ng-container matColumnDef="historyCreatedDate">
+      <th mat-header-cell *matHeaderCellDef>
+        Timestamp
+        <input matInput (keyup)="applyFilter($event, 'historyCreatedDate')" placeholder="Filter">
+      </th>
+      <td mat-cell *matCellDef="let element"> {{ element.historyCreatedDate | date:'medium':'de': 'de' }}</td>
+    </ng-container>
+    <!-- Duration Column -->
+    <ng-container matColumnDef="duration">
+      <th mat-header-cell *matHeaderCellDef>
+        Age
+        <input matInput (keyup)="applyFilter($event, 'duration')" placeholder="Filter">
+      </th>
+      <td mat-cell *matCellDef="let element"> {{ element.duration }}</td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

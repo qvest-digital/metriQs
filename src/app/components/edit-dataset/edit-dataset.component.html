@@ -1,0 +1,42 @@
+<form [formGroup]="datasetForm" (ngSubmit)="saveDataset()" class="edit-dataset-form">
+  <mat-grid-list cols="2" rowHeight="100px">
+    <mat-grid-tile colspan="2">
+      <mat-form-field appearance="fill">
+        <mat-label>Name</mat-label>
+        <input matInput id="name" formControlName="name" type="text" required/>
+        <mat-error *ngIf="datasetForm.get('name')?.hasError('required')">Name is required</mat-error>
+      </mat-form-field>
+    </mat-grid-tile>
+    <mat-grid-tile colspan="2">
+      <mat-form-field appearance="fill">
+        <mat-label>Base URL</mat-label>
+        <input matInput id="baseUrl" formControlName="baseUrl" type="text" required/>
+        <mat-error *ngIf="datasetForm.get('baseUrl')?.hasError('required')">Base URL is required</mat-error>
+        <mat-error *ngIf="datasetForm.get('baseUrl')?.hasError('pattern')">Invalid URL format</mat-error>
+      </mat-form-field>
+    </mat-grid-tile>
+    <mat-grid-tile colspan="2">
+      <mat-form-field appearance="fill">
+        <mat-label>JQL</mat-label>
+        <input matInput id="jql" formControlName="jql" type="text" required/>
+        <mat-error *ngIf="datasetForm.get('jql')?.hasError('required')">JQL is required</mat-error>
+      </mat-form-field>
+    </mat-grid-tile>
+    <mat-grid-tile colspan="2">
+      <mat-form-field appearance="fill">
+        <mat-label>Type</mat-label>
+        <mat-select id="type" formControlName="type" required>
+          <mat-option *ngFor="let type of datasetTypes" [value]="type">{{ type }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="datasetForm.get('type')?.hasError('required')">Type is required</mat-error>
+      </mat-form-field>
+    </mat-grid-tile>
+    <mat-grid-tile colspan="2">
+      <button mat-raised-button color="primary" type="submit" [disabled]="datasetForm.invalid">Save</button>
+      <button *ngIf="datasetId" mat-raised-button color="warn" type="button" (click)="deleteDataset()">Delete</button>
+    </mat-grid-tile>
+  </mat-grid-list>
+</form>
+
+<app-status-mapping></app-status-mapping>
+

@@ -11,7 +11,7 @@ import {environment} from "../../environments/environment";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {firstValueFrom} from "rxjs";
 import {CALLBACK_JIRA_DATA_CENTER, DASHBOARD} from "../app-routing.module";
-import {WorkItemAgeService} from "./work-item-age.service";
+import {BusinessLogicService} from "./business-logic.service";
 
 
 /*
@@ -33,7 +33,7 @@ export class JiraDataCenterService implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private workItemAgeService: WorkItemAgeService
+    private workItemAgeService: BusinessLogicService
   ) {
   }
 
@@ -89,7 +89,7 @@ export class JiraDataCenterService implements OnInit {
   }
 
   async getIssues(dataSetId: number): Promise<Issue[]> {
-    const config = await this.databaseService.getFirstDataset();
+    const config = await this.databaseService.getDataset(dataSetId);
 
     if (config !== null && config?.access_token
     ) {
@@ -114,6 +114,7 @@ export class JiraDataCenterService implements OnInit {
         dataSetId: config.id!,
         createdDate: new Date(issue.fields.created),
         status: issue.fields.status!.name!,
+        externalStatusId: Number.parseInt(issue.fields.status!.id!),
         url: issue.self!,
       }));
 

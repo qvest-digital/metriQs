@@ -6,13 +6,15 @@ import {NgModule} from "@angular/core";
 import {ManageDatasetsComponent} from "./components/manage-datasets/manage-datasets.component";
 import {CallbackComponent} from "./components/callback.component";
 import {CycleTimePage} from "./components/cycle-time-page/cycle-time.page";
+import {EditDatasetComponent} from "./components/edit-dataset/edit-dataset.component";
 
 export const CALLBACK_JIRA_CLOUD = 'callbackJiraCloud';
 export const CALLBACK_JIRA_DATA_CENTER = 'callbackJiraDataCenter';
 export const DASHBOARD = 'dashboard';
 export const WORK_ITEM_AGE = 'work-item-age';
 export const CYCLE_TIME = 'cycle-time';
-export const MANAGE_DATASETS = 'manage-datasets';
+export const MANAGE_DATASETS = 'datasets';
+export const CREATE_DATASETS = MANAGE_DATASETS + '/create';
 
 export const routes: Routes = [
   {path: '', redirectTo: `/${DASHBOARD}`, pathMatch: 'full'},
@@ -21,7 +23,9 @@ export const routes: Routes = [
   {path: DASHBOARD, component: DashboardComponent},
   {path: WORK_ITEM_AGE, component: WorkItemAgePage},
   {path: CYCLE_TIME, component: CycleTimePage},
-  {path: MANAGE_DATASETS, component: ManageDatasetsComponent}
+  {path: MANAGE_DATASETS, component: ManageDatasetsComponent},
+  {path: MANAGE_DATASETS + '/:id', component: EditDatasetComponent},
+  {path: CREATE_DATASETS, component: EditDatasetComponent},
 ];
 
 @NgModule({
