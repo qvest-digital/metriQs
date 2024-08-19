@@ -8,6 +8,7 @@ import {AppSettings} from "../models/appSettings";
 import {IssueHistory} from "../models/issueHistory";
 import {CycletimeEntry} from "../models/cycletimeEntry";
 import {Status} from "../models/status";
+import {Throughput} from "../models/throughput";
 
 export class TableNames {
   static readonly DATASETS = 'datasets';
@@ -17,6 +18,7 @@ export class TableNames {
   static readonly ISSUE_HISTORY = 'issueHistory';
   static readonly CYCLE_TIME = 'cycleTime';
   static readonly STATUS = 'status';
+  static readonly THROUGHPUT = 'throughput';
 }
 
 export const dataSetDbConfig: DBConfig = {
@@ -75,6 +77,12 @@ export const dbConfigIssueData: DBConfig = {
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
       ]
     },
+    {
+      store: TableNames.THROUGHPUT,
+      storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
+        {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+      ]
+    },
   ]
 };
 
@@ -86,6 +94,7 @@ export function migrationFactory() {
       const workItems = transaction.objectStore(TableNames.WORK_ITEM_AGE);
       const issueHistory = transaction.objectStore(TableNames.ISSUE_HISTORY);
       const cycleTime = transaction.objectStore(TableNames.CYCLE_TIME);
+      const throughput = transaction.objectStore(TableNames.THROUGHPUT);
     },
   };
 }
@@ -218,6 +227,16 @@ export class StorageService {
   async addStatuses(status: Status[]) {
     this.dbService.selectDb(dataSetDbConfig.name);
     return firstValueFrom(this.dbService.bulkAdd<Status>(TableNames.STATUS, status));
+  }
+
+  async getThroughputData(): Promise<Throughput[]> {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.getAll<Throughput>(TableNames.THROUGHPUT));
+  }
+
+  async addThroughputData(throughput: Throughput[]): Promise<number[]> {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.bulkAdd<Throughput>(TableNames.THROUGHPUT, throughput));
   }
 
 
