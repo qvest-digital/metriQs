@@ -6,9 +6,10 @@ import {NgxIndexedDBModule, DBConfig, NgxIndexedDBService} from 'ngx-indexed-db'
 import {firstValueFrom} from "rxjs";
 import {AppSettings} from "../models/appSettings";
 import {IssueHistory} from "../models/issueHistory";
-import {CycletimeEntry} from "../models/cycletimeEntry";
+import {CycleTimeEntry} from "../models/cycleTimeEntry";
 import {Status} from "../models/status";
 import {Throughput} from "../models/throughput";
+import {CanceledCycleEntry} from "../models/canceledCycleEntry";
 
 export class TableNames {
   static readonly DATASETS = 'datasets';
@@ -19,6 +20,7 @@ export class TableNames {
   static readonly CYCLE_TIME = 'cycleTime';
   static readonly STATUS = 'status';
   static readonly THROUGHPUT = 'throughput';
+  static readonly CANCELED_CYCLE = 'canceledCycle';
 }
 
 export const dataSetDbConfig: DBConfig = {
@@ -78,6 +80,12 @@ export const dbConfigIssueData: DBConfig = {
       ]
     },
     {
+      store: TableNames.CANCELED_CYCLE,
+      storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
+        {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+      ]
+    },
+    {
       store: TableNames.THROUGHPUT,
       storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
@@ -94,6 +102,7 @@ export function migrationFactory() {
       const workItems = transaction.objectStore(TableNames.WORK_ITEM_AGE);
       const issueHistory = transaction.objectStore(TableNames.ISSUE_HISTORY);
       const cycleTime = transaction.objectStore(TableNames.CYCLE_TIME);
+      const canceled = transaction.objectStore(TableNames.CANCELED_CYCLE);
       const throughput = transaction.objectStore(TableNames.THROUGHPUT);
     },
   };
@@ -215,14 +224,14 @@ export class StorageService {
     return firstValueFrom(this.dbService.getAll<IssueHistory>(TableNames.ISSUE_HISTORY));
   }
 
-  async addCycleTimeEntries(cycleTimes: CycletimeEntry[]) {
+  async addCycleTimeEntries(cycleTimes: CycleTimeEntry[]) {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.bulkAdd<CycletimeEntry>(TableNames.CYCLE_TIME, cycleTimes ));
+    return firstValueFrom(this.dbService.bulkAdd<CycleTimeEntry>(TableNames.CYCLE_TIME, cycleTimes));
   }
 
   async getCycleTimeData() {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll<CycletimeEntry>(TableNames.CYCLE_TIME));
+    return firstValueFrom(this.dbService.getAll<CycleTimeEntry>(TableNames.CYCLE_TIME));
   }
 
   async addStatuses(status: Status[]) {
@@ -266,5 +275,11 @@ export class StorageService {
     this.dbService.selectDb(dbConfigIssueData.name);
     const promises = issuesIds.map(id => firstValueFrom(this.dbService.getByID<Issue>(TableNames.ISSUES, id)));
     return Promise.all(promises);
+  }
+
+  async addCanceledCycleEntries(canEntries: CanceledCycleEntry[]) {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.bulkAdd<CanceledCycleEntry>(TableNames.CANCELED_CYCLE, canEntries));
+
   }
 }

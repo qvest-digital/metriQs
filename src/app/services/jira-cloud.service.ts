@@ -124,11 +124,13 @@ export class JiraCloudService implements OnInit {
           const issueHistories = this.businessLogicService.mapChangelogToIssueHistory(i, issue.changelog as Version2.Version2Models.Changelog);
           await this.storageService.addIssueHistories(issueHistories);
 
-          const wiAge = await this.businessLogicService.map2WorkItemAgeEntries([i]);
-          await this.storageService.addWorkItemAgeData(wiAge);
-
-          const cycleTime = this.businessLogicService.map2CycleTimeEntries(issueHistories, i);
-          await this.storageService.addCycleTimeEntries(cycleTime);
+          const entryHolder = await this.businessLogicService.analyzeIssueHistoriesForStatusChanges(issueHistories, i);
+          if (entryHolder.wiaEntry !== null)
+            await this.storageService.addWorkItemAgeData([entryHolder.wiaEntry]);
+          if (entryHolder.cycleTEntries.length > 0)
+            await this.storageService.addCycleTimeEntries(entryHolder.cycleTEntries);
+          if (entryHolder.canEntries.length > 0)
+            await this.storageService.addCanceledCycleEntries(entryHolder.canEntries);
         }
         const allHistories = await this.storageService.getAllIssueHistories();
 
