@@ -4,6 +4,7 @@ import {Chart, ChartConfiguration, ChartData, ChartType} from 'chart.js';
 import {ChangeDetectorRef} from '@angular/core';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import {WorkItemAgeEntry} from "../../models/workItemAgeEntry";
+import {BusinessLogicService} from "../../services/business-logic.service";
 
 @Component({
   selector: 'app-work-item-age-chart',
@@ -102,7 +103,7 @@ export class WorkItemAgeChartComponent implements OnInit, OnChanges {
     ],
   };
 
-  constructor(private cdr: ChangeDetectorRef) {
+  constructor(private cdr: ChangeDetectorRef, private businessLogicService: BusinessLogicService) {
     Chart.register(annotationPlugin);
   }
 
@@ -124,6 +125,9 @@ export class WorkItemAgeChartComponent implements OnInit, OnChanges {
         issueKey: item.issueKey,
         status: item.status
       }));
+      const percentilValue = this.businessLogicService.computePercentile(this.workItemAgeData.map(item => item.age), 80);
+      this.updateAnnotationLine(percentilValue);
+
       this.chart?.update();
       this.cdr.detectChanges();
     }
@@ -131,5 +135,24 @@ export class WorkItemAgeChartComponent implements OnInit, OnChanges {
 
   updateChart() {
     this.chart?.update();
+  }
+
+  updateAnnotationLine(newValue: number) {
+    // const line1: any = (this.scatterChartOptions!.plugins!.annotation!.annotations as any).line1;
+    // if (line1) {
+    (this.scatterChartOptions!.plugins!.annotation!.annotations as any).line1 = {
+      type: 'line',
+      yMin: newValue,
+      yMax: newValue,
+      borderColor: 'red',
+      borderWidth: 2,
+      label: {
+        content: 'SLE Threshold (80%) = ' + newValue,
+        position: 'center',
+        display: true
+      }
+    }
+    this.chart?.update();
+    // }
   }
 }
