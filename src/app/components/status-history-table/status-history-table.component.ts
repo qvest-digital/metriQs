@@ -64,7 +64,7 @@ export class StatusHistoryTableComponent implements OnInit {
 
   async ngOnInit() {
     const issueHistories = await this.storageService.getAllIssueHistoriesForStatuses();
-    const issuesIds = this.businessLogic.removeDuplicates(issueHistories.map(issueHistory => issueHistory.issueId));
+    const issuesIds = this.businessLogic.removeDuplicates(issueHistories.map(issueHistory => issueHistory.issueId), (a, b) => a == b);
     const issues = await this.storageService.getIssuesByIds(issuesIds);
 
     const combinedData: CombinedIssueHistory[] = issueHistories.map(issueHistory => {

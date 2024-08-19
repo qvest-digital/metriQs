@@ -1,25 +1,5 @@
 <div class="grid-container">
   <h1 class="mat-h1">Work Item Age</h1>
-  <mat-grid-list cols="1" rowHeight="100px">
-    <!-- Metadata Display -->
-    <mat-grid-tile [colspan]="1" [rowspan]="2">
-      <mat-card class="dashboard-card">
-        <mat-card-header>
-          <mat-card-title>Status</mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="status-card-content">
-          <mat-chip-set
-            class="example-chip"
-          >
-            @for (status of availableStatuses(); track status.name) {
-              <mat-chip-option class="example-box" cdkDrag> {{ status.name }}
-              </mat-chip-option>
-            }
-          </mat-chip-set>
-        </mat-card-content>
-      </mat-card>
-    </mat-grid-tile>
-  </mat-grid-list>
   <mat-grid-list cols="4" rowHeight="500px">
     <!-- Large Chart in the Middle -->
     <mat-grid-tile [colspan]="4" [rowspan]="1">

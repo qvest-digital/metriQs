@@ -151,7 +151,7 @@ export class BusinessLogicService {
   }
 
   public findAllNewStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
-    const statuses = new Set<Status>();
+    let statuses = new Array<Status>();
 
     issues.forEach(issue => {
       const status: Status = {
@@ -159,16 +159,17 @@ export class BusinessLogicService {
         name: issue.status,
         externalId: issue.externalStatusId
       };
-      statuses.add(status);
+      statuses.push(status);
     });
+    statuses = this.removeDuplicates(statuses, (a, b) => a.externalId === b.externalId);
 
     issueHistories.forEach(history => {
       if (history.field === 'status') {
-        if (!this.stateExistsInSet(statuses, history.fromValueId!)) {
+        if (history.fromValueId && !this.stateExistsInSet(statuses, history.fromValueId!)) {
 
-          statuses.add({dataSetId: history.datasetId, name: history.fromValue, externalId: history.fromValueId!});
-        } else if (!this.stateExistsInSet(statuses, history.toValueId!)) {
-          statuses.add({dataSetId: history.datasetId, name: history.toValue, externalId: history.toValueId!});
+          statuses.push({dataSetId: history.datasetId, name: history.fromValue, externalId: history.fromValueId!});
+        } else if (history.toValueId && !this.stateExistsInSet(statuses, history.toValueId!)) {
+          statuses.push({dataSetId: history.datasetId, name: history.toValue, externalId: history.toValueId!});
         }
       }
     });
@@ -176,7 +177,7 @@ export class BusinessLogicService {
     return Array.from(statuses);
   }
 
-  private stateExistsInSet(set: Set<Status>, externalId: number): boolean {
+  private stateExistsInSet(set: Array<Status>, externalId: number): boolean {
     for (let item of set) {
       if (item.externalId === externalId) {
         return true; // Object with the same key already exists
@@ -192,8 +193,14 @@ export class BusinessLogicService {
     );
   }
 
-  removeDuplicates<T>(array: T[]): T[] {
-    return Array.from(new Set(array));
+  removeDuplicates<T>(array: T[], compareFn: (a: T, b: T) => boolean): T[] {
+    const uniqueArray: T[] = [];
+    array.forEach(item => {
+      if (!uniqueArray.some(uniqueItem => compareFn(item, uniqueItem))) {
+        uniqueArray.push(item);
+      }
+    });
+    return uniqueArray;
   }
 
   computePercentile(cycleTimes: number[], percentile: number): number {

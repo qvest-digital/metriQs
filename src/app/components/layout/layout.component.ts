@@ -138,8 +138,13 @@ export class LayoutComponent implements OnInit {
     }
   }
 
-  clearDatabase() {
-    this.storageService.clearAllData();
+  async clearDatabase() {
+    const success = await this.storageService.clearIssueData();
+    if (success) {
+      this.toastr.success('Successfully cleared all data');
+    } else {
+      this.toastr.error('Failed to clear all data');
+    }
   }
 
     protected readonly THROUGHPUT = THROUGHPUT;

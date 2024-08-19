@@ -193,7 +193,7 @@ export class StorageService {
   //FIXME: this must be dependent on the dataset
   async clearIssueData() {
     this.dbService.selectDb(dbConfigIssueData.name);
-    this.dbService.deleteDatabase();
+    return firstValueFrom(this.dbService.deleteDatabase());
   }
 
   async clearAllData() {
@@ -202,6 +202,7 @@ export class StorageService {
     await firstValueFrom(this.dbService.clear(TableNames.ISSUES));
     await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
     await firstValueFrom(this.dbService.clear(TableNames.CYCLE_TIME));
+    await firstValueFrom(this.dbService.clear(TableNames.THROUGHPUT));
   }
 
   async addIssueHistories(histories: IssueHistory[]): Promise<number[]> {

@@ -120,8 +120,7 @@ export class JiraCloudService implements OnInit {
             url: issue.self!,
           };
           i = await this.storageService.addissue(i);
-
-
+          issues.push(i);
           const issueHistories = this.businessLogicService.mapChangelogToIssueHistory(i, issue.changelog as Version2.Version2Models.Changelog);
           await this.storageService.addIssueHistories(issueHistories);
 
