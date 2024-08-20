@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EditDatasetComponent } from './edit-dataset.component';
+import {DatasourceEditComponent} from './datasource-edit.component';
 
 describe('EditDatasetComponent', () => {
-  let component: EditDatasetComponent;
-  let fixture: ComponentFixture<EditDatasetComponent>;
+  let component: DatasourceEditComponent;
+  let fixture: ComponentFixture<DatasourceEditComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EditDatasetComponent]
+      imports: [DatasourceEditComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EditDatasetComponent);
+    fixture = TestBed.createComponent(DatasourceEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

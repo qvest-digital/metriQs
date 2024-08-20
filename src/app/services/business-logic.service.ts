@@ -34,7 +34,7 @@ export class BusinessLogicService {
       // Add a separate IssueHistory entry for the issue with createdDate
       const issueCreatedHistory: IssueHistory = {
         issueId: issue.id!,
-        datasetId: issue.dataSetId,
+        datasourceId: issue.dataSourceId,
         fromValue: '',
         toValueId: Number.parseInt(findStatusHistory.items[0].from),
         toValue: firstStatusChange.items[0].fromString,
@@ -54,7 +54,7 @@ export class BusinessLogicService {
       }) => {
         const issueHistory: IssueHistory = {
           issueId: issue.id!,
-          datasetId: issue.dataSetId,
+          datasourceId: issue.dataSourceId,
           fromValue: item.fromString || '',
           fromValueId: Number.parseInt(item.from),
           toValueId: Number.parseInt(item.to),
@@ -123,7 +123,7 @@ export class BusinessLogicService {
 
     issues.forEach(issue => {
       const status: Status = {
-        dataSetId: issue.dataSetId,
+        dataSourceId: issue.dataSourceId,
         name: issue.status,
         externalId: issue.externalStatusId
       };
@@ -135,9 +135,13 @@ export class BusinessLogicService {
       if (history.field === 'status') {
         if (history.fromValueId && !this.stateExistsInSet(statuses, history.fromValueId!)) {
 
-          statuses.push({dataSetId: history.datasetId, name: history.fromValue, externalId: history.fromValueId!});
+          statuses.push({
+            dataSourceId: history.datasourceId,
+            name: history.fromValue,
+            externalId: history.fromValueId!
+          });
         } else if (history.toValueId && !this.stateExistsInSet(statuses, history.toValueId!)) {
-          statuses.push({dataSetId: history.datasetId, name: history.toValue, externalId: history.toValueId!});
+          statuses.push({dataSourceId: history.datasourceId, name: history.toValue, externalId: history.toValueId!});
         }
       }
     });

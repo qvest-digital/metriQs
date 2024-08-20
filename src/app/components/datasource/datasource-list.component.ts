@@ -1,4 +1,3 @@
-// src/app/components/manage-datasets/manage-datasets.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatFormField, MatLabel } from "@angular/material/form-field";
@@ -10,14 +9,14 @@ import { NgForOf, NgIf } from "@angular/common";
 import { MatInput } from "@angular/material/input";
 import { MatSelect, MatOption } from "@angular/material/select";
 import { StorageService } from '../../services/storage.service';
-import {Dataset} from '../../models/dataset';
+import {Datasource} from '../../models/datasource';
 import {LayoutComponent} from "../layout/layout.component";
-import {CREATE_DATASETS, MANAGE_DATASETS} from "../../app-routing.module";
+import {DATASOURCE_CREATE, DATASOURCE_LIST} from "../../app-routing.module";
 import {Router} from "@angular/router";
 
 @Component({
-  selector: 'app-manage-datasets',
-  templateUrl: './manage-datasets.component.html',
+  selector: 'app-datasources-list',
+  templateUrl: './datasource-list.component.html',
   standalone: true,
   imports: [
     MatFormField,
@@ -35,33 +34,31 @@ import {Router} from "@angular/router";
     MatSelect,
     MatOption
   ],
-  styleUrls: ['./manage-datasets.component.scss']
+  styleUrls: ['./datasource-list.component.scss']
 })
-export class ManageDatasetsComponent implements OnInit {
-  datasets: Dataset[] = [];
+export class DatasourceListComponent implements OnInit {
+  datasources: Datasource[] = [];
 
   constructor(
     private storageService: StorageService,
-    private fb: FormBuilder,
-    private layoutComponent: LayoutComponent,
     private router: Router
   ) {
   }
 
   async ngOnInit() {
-    this.datasets = await this.storageService.getAllDatasets();
+    this.datasources = await this.storageService.getAllDatasources();
   }
 
-  async removeDataset(dataset: Dataset) {
-    await this.storageService.removeDataset(dataset.id!);
-    this.datasets = await this.storageService.getAllDatasets();
+  async removeDatasource(datasource: Datasource) {
+    await this.storageService.removeDatasource(datasource.id!);
+    this.datasources = await this.storageService.getAllDatasources();
   }
 
-  editDataset(dataset: Dataset) {
-    this.router.navigate([MANAGE_DATASETS, dataset.id]);
+  editDatasource(datasource: Datasource) {
+    this.router.navigate([DATASOURCE_LIST, datasource.id]);
   }
 
-  createDataset() {
-    this.router.navigate([CREATE_DATASETS]);
+  createDatasource() {
+    this.router.navigate([DATASOURCE_CREATE]);
   }
 }

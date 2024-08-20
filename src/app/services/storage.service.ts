@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Dataset} from '../models/dataset';
+import {Datasource} from '../models/datasource';
 import {Issue} from "../models/issue";
 import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {NgxIndexedDBModule, DBConfig, NgxIndexedDBService} from 'ngx-indexed-db';
@@ -12,29 +12,26 @@ import {ThroughputEntry} from "../models/throughputEntry";
 import {CanceledCycleEntry} from "../models/canceledCycleEntry";
 
 export class TableNames {
-  static readonly DATASETS = 'datasets';
+  static readonly DATASOURCES = 'datasources';
   static readonly ISSUES = 'issues';
-  static readonly WORK_ITEM_AGE = 'workItemAge';
+  static readonly WORK_ITEM_AGE = 'workItemAges';
   static readonly APP_SETTINGS = 'appSettings';
-  static readonly ISSUE_HISTORY = 'issueHistory';
-  static readonly CYCLE_TIME = 'cycleTime';
+  static readonly ISSUE_HISTORY = 'issueHistories';
+  static readonly CYCLE_TIME = 'cycleTimes';
   static readonly STATUS = 'status';
-  static readonly THROUGHPUT = 'throughput';
-  static readonly CANCELED_CYCLE = 'canceledCycle';
+  static readonly THROUGHPUT = 'throughputs';
+  static readonly CANCELED_CYCLE = 'canceledCycles';
 }
 
-export const dataSetDbConfig: DBConfig = {
-  name: 'metriqs-database-datasets',
+export const dbConfigCore: DBConfig = {
+  name: 'metriqs-database-core',
   version: 1,
   migrationFactory: migrationFactoryDataset,
   objectStoresMeta: [{
-    store: TableNames.DATASETS,
+    store: TableNames.DATASOURCES,
     storeConfig: {keyPath: 'id', autoIncrement: true},
     storeSchema: [
       {name: 'url', keypath: 'url', options: {unique: false}},
-      {name: 'access_token', keypath: 'access_token', options: {unique: false}},
-      {name: 'cloudId', keypath: 'cloudId', options: {unique: false}},
-      {name: 'jql', keypath: 'jql', options: {unique: false}},
     ]
   }, {
     store: TableNames.APP_SETTINGS,
@@ -56,7 +53,7 @@ export const dbConfigIssueData: DBConfig = {
   objectStoresMeta: [ {
     store: TableNames.ISSUES,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
-      {name: 'dataSetId', keypath: 'dataSetId', options: { unique: false}},
+      {name: 'dataSourceId', keypath: 'dataSourceId', options: {unique: false}},
       {name: 'issueKey', keypath: 'issueKey', options: {unique: false}},
       {name: 'id', keypath: 'id', options: {unique: false}},
     ]
@@ -114,7 +111,7 @@ export function migrationFactoryDataset() {
   // to be modified so a migrator for that version is not included.
   return {
     1: (db: any, transaction: { objectStore: (arg0: string) => any; }) => {
-      const issues = transaction.objectStore(TableNames.DATASETS);
+      const issues = transaction.objectStore(TableNames.DATASOURCES);
       const settings = transaction.objectStore(TableNames.APP_SETTINGS);
       const status = transaction.objectStore(TableNames.STATUS);
     },
@@ -141,24 +138,24 @@ export class StorageService {
     });
   }
 
-  async addDataset(dataset: Dataset): Promise<Dataset> {
-    this.dbService.selectDb(dataSetDbConfig.name);
-    return firstValueFrom(this.dbService.add(TableNames.DATASETS, dataset));
+  async addDataset(dataset: Datasource): Promise<Datasource> {
+    this.dbService.selectDb(dbConfigCore.name);
+    return firstValueFrom(this.dbService.add(TableNames.DATASOURCES, dataset));
   }
 
-  async getAllDatasets(): Promise<Dataset[]> {
-    this.dbService.selectDb(dataSetDbConfig.name);
-    return firstValueFrom(this.dbService.getAll<Dataset>(TableNames.DATASETS));
+  async getAllDatasources(): Promise<Datasource[]> {
+    this.dbService.selectDb(dbConfigCore.name);
+    return firstValueFrom(this.dbService.getAll<Datasource>(TableNames.DATASOURCES));
   }
 
-  async removeDataset(id: number): Promise<void> {
-    this.dbService.selectDb(dataSetDbConfig.name);
-    await firstValueFrom(this.dbService.delete(TableNames.DATASETS, id));
+  async removeDatasource(id: number): Promise<void> {
+    this.dbService.selectDb(dbConfigCore.name);
+    await firstValueFrom(this.dbService.delete(TableNames.DATASOURCES, id));
   }
 
-  async updateDataset(dataset: Dataset): Promise<Dataset> {
-    this.dbService.selectDb(dataSetDbConfig.name);
-    return await firstValueFrom(this.dbService.update(TableNames.DATASETS, dataset));
+  async updateDatasource(dataset: Datasource): Promise<Datasource> {
+    this.dbService.selectDb(dbConfigCore.name);
+    return await firstValueFrom(this.dbService.update(TableNames.DATASOURCES, dataset));
   }
 
   async hasWorkItemAgeData(): Promise<boolean> {
@@ -191,24 +188,24 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd(TableNames.WORK_ITEM_AGE, workItemAgeEntries));
   }
 
-  async createDataset(newDataset: Dataset) {
-    this.dbService.selectDb(dataSetDbConfig.name);
-    return firstValueFrom(this.dbService.add<Dataset>(TableNames.DATASETS, newDataset));
+  async createDataset(newDataset: Datasource) {
+    this.dbService.selectDb(dbConfigCore.name);
+    return firstValueFrom(this.dbService.add<Datasource>(TableNames.DATASOURCES, newDataset));
   }
 
-  getDataset(id: number): Promise<Dataset> {
-    this.dbService.selectDb(dataSetDbConfig.name);
-    return firstValueFrom(this.dbService.getByID<Dataset>(TableNames.DATASETS, id));
+  getDatasource(id: number): Promise<Datasource> {
+    this.dbService.selectDb(dbConfigCore.name);
+    return firstValueFrom(this.dbService.getByID<Datasource>(TableNames.DATASOURCES, id));
   }
 
   async saveAppSettings(appSettings: AppSettings): Promise<any> {
-    this.dbService.selectDb(dataSetDbConfig.name);
+    this.dbService.selectDb(dbConfigCore.name);
     await firstValueFrom(this.dbService.clear(TableNames.APP_SETTINGS));
     return firstValueFrom(this.dbService.add(TableNames.APP_SETTINGS, appSettings));
   }
 
   async getAppSettings(): Promise<AppSettings> {
-    this.dbService.selectDb(dataSetDbConfig.name);
+    this.dbService.selectDb(dbConfigCore.name);
     return firstValueFrom(this.dbService.getAll<AppSettings>(TableNames.APP_SETTINGS)).then(datasets => datasets[0]);
   }
 
@@ -247,7 +244,7 @@ export class StorageService {
   }
 
   async addStatuses(status: Status[]) {
-    this.dbService.selectDb(dataSetDbConfig.name);
+    this.dbService.selectDb(dbConfigCore.name);
     return firstValueFrom(this.dbService.bulkAdd<Status>(TableNames.STATUS, status));
   }
 
@@ -263,12 +260,12 @@ export class StorageService {
 
 
   getAllStatuses() {
-    this.dbService.selectDb(dataSetDbConfig.name);
+    this.dbService.selectDb(dbConfigCore.name);
     return firstValueFrom(this.dbService.getAll<Status>(TableNames.STATUS));
   }
 
   updateStatus(status: Status) {
-    this.dbService.selectDb(dataSetDbConfig.name);
+    this.dbService.selectDb(dbConfigCore.name);
     return firstValueFrom(this.dbService.update<Status>(TableNames.STATUS, status));
 
   }

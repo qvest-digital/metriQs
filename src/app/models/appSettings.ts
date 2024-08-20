@@ -1,3 +1,3 @@
 export interface AppSettings {
-  selectedDatasetId: number;
+  selectedDatasourceId: number;
 }

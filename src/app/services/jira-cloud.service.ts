@@ -8,7 +8,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {environment} from "../../environments/environment";
 import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {CALLBACK_JIRA_CLOUD, DASHBOARD, MANAGE_DATASETS} from "../app-routing.module";
+import {CALLBACK_JIRA_CLOUD, DASHBOARD, DATASOURCE_LIST} from "../app-routing.module";
 import {BusinessLogicService} from "./business-logic.service";
 
 /*
@@ -77,29 +77,29 @@ export class JiraCloudService implements OnInit {
 
     const resourceId = resourceResponse[0].id;
     const appSettings = await this.storageService.getAppSettings();
-    const dataset = await this.storageService.getDataset(appSettings.selectedDatasetId);
-    dataset.access_token = accessToken;
-    dataset.cloudId = resourceId;
-    await this.storageService.updateDataset(dataset);
+    const datasource = await this.storageService.getDatasource(appSettings.selectedDatasourceId);
+    datasource.access_token = accessToken;
+    datasource.cloudId = resourceId;
+    await this.storageService.updateDatasource(datasource);
     this.toastr.success('Successfully logged in to Jira');
-    await this.router.navigate([MANAGE_DATASETS, appSettings.selectedDatasetId]);
+    await this.router.navigate([DATASOURCE_LIST, appSettings.selectedDatasourceId]);
   }
 
-  async getAndSaveIssues(dataSetId: number): Promise<Issue[]> {
-    const dataset = await this.storageService.getDataset(dataSetId);
+  async getAndSaveIssues(dataSourceId: number): Promise<Issue[]> {
+    const datasource = await this.storageService.getDatasource(dataSourceId);
 
-    if (dataset !== null && dataset?.access_token) {
+    if (datasource !== null && datasource?.access_token) {
       const client = new Version3Client({
-        host: `https://api.atlassian.com/ex/jira/${dataset?.cloudId}`,
+        host: `https://api.atlassian.com/ex/jira/${datasource?.cloudId}`,
         authentication: {
           oauth2: {
-            accessToken: dataset.access_token!,
+            accessToken: datasource.access_token!,
           },
         },
       });
       try {
         const response = await client.issueSearch.searchForIssuesUsingJqlPost({
-          jql: dataset.jql,
+          jql: datasource.jql,
           fields: ['status', 'created', 'summary', 'issueType', 'statuscategorychangedate'],
           expand: ['changelog', 'names'],
         });
@@ -113,7 +113,7 @@ export class JiraCloudService implements OnInit {
           let i: Issue = {
             issueKey: issue.key,
             title: issue.fields.summary,
-            dataSetId: dataset.id!,
+            dataSourceId: datasource.id!,
             createdDate: new Date(issue.fields.created),
             status: issue.fields.status!.name!,
             externalStatusId: Number.parseInt(issue.fields.status!.id!),

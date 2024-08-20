@@ -29,14 +29,14 @@
         clear Database
       </button>
       <mat-form-field appearance="outline">
-        <mat-label>Select Dataset</mat-label>
-        <mat-select [(value)]="selectedDataset" (selectionChange)="onDatasetChange($event)">
-          <mat-option *ngFor="let dataset of datasets" [value]="dataset.id">{{ dataset.name }}</mat-option>
+        <mat-label>Select Datasource</mat-label>
+        <mat-select [(value)]="selectedDatasource" (selectionChange)="onDatasourceChange($event)">
+          <mat-option *ngFor="let datasource of datasources" [value]="datasource.id">{{ datasource.name }}</mat-option>
         </mat-select>
       </mat-form-field>
-      <button mat-button [routerLink]="MANAGE_DATASETS">
+      <button mat-button [routerLink]="DATASOURCE_LIST">
         <mat-icon>settings</mat-icon>
-        Manage Datasets
+        Manage Datasources
       </button>
       <button mat-button (click)="login()">
         <mat-icon>login</mat-icon>
