@@ -139,7 +139,7 @@ export class LayoutComponent implements OnInit {
   }
 
   async clearDatabase() {
-    const success = await this.storageService.clearIssueData();
+    const success = await this.storageService.recreateDatabase();
     if (success) {
       this.toastr.success('Successfully cleared all data');
     } else {

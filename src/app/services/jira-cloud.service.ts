@@ -140,6 +140,10 @@ export class JiraCloudService implements OnInit {
         newStatesFound = this.businessLogicService.filterOutMappedStatuses(newStatesFound, allStatuses);
         await this.storageService.addStatuses(newStatesFound);
 
+        const cycleTimeEntries = await this.storageService.getCycleTimeData();
+        const throughputs = this.businessLogicService.findThroughputEntries(cycleTimeEntries);
+        await this.storageService.saveThroughputData(throughputs);
+
         return issues;
       } catch (error) {
         this.toastr.error('Failed to fetch issues from Jira', error!.toString());

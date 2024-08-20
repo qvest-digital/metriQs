@@ -8,7 +8,7 @@ import {AppSettings} from "../models/appSettings";
 import {IssueHistory} from "../models/issueHistory";
 import {CycleTimeEntry} from "../models/cycleTimeEntry";
 import {Status} from "../models/status";
-import {Throughput} from "../models/throughput";
+import {ThroughputEntry} from "../models/throughputEntry";
 import {CanceledCycleEntry} from "../models/canceledCycleEntry";
 
 export class TableNames {
@@ -94,6 +94,7 @@ export const dbConfigIssueData: DBConfig = {
   ]
 };
 
+
 // Ahead of time compiles requires an exported function for factories
 export function migrationFactory() {
   return {
@@ -126,6 +127,18 @@ export function migrationFactoryDataset() {
 export class StorageService {
 
   constructor(private dbService: NgxIndexedDBService) {
+  }
+
+  async recreateDatabase(): Promise<boolean> {
+    return this.deleteIssueDatabase().then(async () => {
+      for (const storeMeta of dbConfigIssueData.objectStoresMeta) {
+        const store = await this.dbService.createObjectStore(storeMeta, migrationFactory);
+        // storeMeta.storeSchema.forEach(schema => {
+        //   store.createIndex(schema.name, schema.keypath, schema.options);
+        // });
+      }
+      return true;
+    });
   }
 
   async addDataset(dataset: Dataset): Promise<Dataset> {
@@ -199,8 +212,7 @@ export class StorageService {
     return firstValueFrom(this.dbService.getAll<AppSettings>(TableNames.APP_SETTINGS)).then(datasets => datasets[0]);
   }
 
-  //FIXME: this must be dependent on the dataset
-  async clearIssueData() {
+  async deleteIssueDatabase() {
     this.dbService.selectDb(dbConfigIssueData.name);
     return firstValueFrom(this.dbService.deleteDatabase());
   }
@@ -239,14 +251,14 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd<Status>(TableNames.STATUS, status));
   }
 
-  async getThroughputData(): Promise<Throughput[]> {
+  async getThroughputData(): Promise<ThroughputEntry[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll<Throughput>(TableNames.THROUGHPUT));
+    return firstValueFrom(this.dbService.getAll<ThroughputEntry>(TableNames.THROUGHPUT));
   }
 
-  async addThroughputData(throughput: Throughput[]): Promise<number[]> {
+  async addThroughputData(throughput: ThroughputEntry[]): Promise<number[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.bulkAdd<Throughput>(TableNames.THROUGHPUT, throughput));
+    return firstValueFrom(this.dbService.bulkAdd<ThroughputEntry>(TableNames.THROUGHPUT, throughput));
   }
 
 
@@ -281,5 +293,10 @@ export class StorageService {
     this.dbService.selectDb(dbConfigIssueData.name);
     return firstValueFrom(this.dbService.bulkAdd<CanceledCycleEntry>(TableNames.CANCELED_CYCLE, canEntries));
 
+  }
+
+  async saveThroughputData(througputs: ThroughputEntry[]) {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.bulkAdd<ThroughputEntry>(TableNames.THROUGHPUT, througputs));
   }
 }

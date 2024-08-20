@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { StorageService } from '../../services/storage.service';
-import { Throughput } from '../../models/throughput';
+import {ThroughputEntry} from '../../models/throughputEntry';
 
 @Component({
   selector: 'app-throughput-page',
@@ -41,22 +41,8 @@ export class ThroughputPageComponent implements OnInit {
 
   constructor(private storageService: StorageService) {}
 
-  //FIXME
-  async saveExampleThroughputData(): Promise<void> {
-    const exampleData: Throughput[] = [
-      { throughput: 5, date: new Date('2023-01-01'), issueId: 1, issueKey: 'KEY-1', title: 'Title 1' },
-      { throughput: 10, date: new Date('2023-01-02'), issueId: 2, issueKey: 'KEY-2', title: 'Title 2' },
-      { throughput: 15, date: new Date('2023-01-03'), issueId: 3, issueKey: 'KEY-3', title: 'Title 3' },
-      { throughput: 20, date: new Date('2023-01-04'), issueId: 4, issueKey: 'KEY-4', title: 'Title 4' },
-      { throughput: 25, date: new Date('2023-01-05'), issueId: 5, issueKey: 'KEY-5', title: 'Title 5' },
-    ];
-    await this.storageService.addThroughputData(exampleData);
-  }
-
   async ngOnInit() {
-    await this.saveExampleThroughputData();
-
-    const throughputData: Throughput[] = await this.storageService.getThroughputData();
+    const throughputData: ThroughputEntry[] = await this.storageService.getThroughputData();
     this.lineChartData.datasets[0].data = throughputData.map(entry => entry.throughput);
     this.lineChartData.labels = throughputData.map(entry => entry.date.toDateString());
     this.chart?.update();

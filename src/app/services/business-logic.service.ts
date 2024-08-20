@@ -6,6 +6,8 @@ import {IssueHistory} from "../models/issueHistory";
 import {CycleTimeEntry} from "../models/cycleTimeEntry";
 import {Status, StatusCategory} from "../models/status";
 import {CanceledCycleEntry} from "../models/canceledCycleEntry";
+import {ThroughputEntry} from "../models/throughputEntry";
+import {count} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -268,5 +270,35 @@ export class BusinessLogicService {
     }
 
     return {wiaEntry: workItemAgeEntry!, canEntries: canceledCycleEntries, cycleTEntries: cycleTimeEntries};
+  }
+
+  findThroughputEntries(cycleTimeEntries: CycleTimeEntry[]): ThroughputEntry[] {
+    const throughputEntries: ThroughputEntry[] = [];
+    const throughputMap: Map<string, { count: number, issueIds: number[] }> = new Map();
+
+    // Count the number of CycleTimeEntries resolved on the same day and collect issue IDs
+    cycleTimeEntries.forEach(entry => {
+      const resolvedDateStr = entry.resolvedDate.toISOString().split('T')[0]; // Get the date part only
+      if (throughputMap.has(resolvedDateStr)) {
+        const entryData = throughputMap.get(resolvedDateStr)!;
+        entryData.count += 1;
+        entryData.issueIds.push(entry.issueId);
+      } else {
+        throughputMap.set(resolvedDateStr, {count: 1, issueIds: [entry.issueId]});
+      }
+    });
+
+    // Create ThroughputEntry objects using the counts from the map
+    throughputMap.forEach((data, dateStr) => {
+      const date = new Date(dateStr);
+      const throughputEntry: ThroughputEntry = {
+        date: date,
+        throughput: data.count,
+        issueIds: data.issueIds
+      };
+      throughputEntries.push(throughputEntry);
+    });
+
+    return throughputEntries;
   }
 }
