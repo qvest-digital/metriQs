@@ -15,7 +15,14 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {StorageService} from "../../services/storage.service";
 import {Datasource, DataSourceType} from "../../models/datasource";
 import {ToastrService} from "ngx-toastr";
-import {CYCLE_TIME, DASHBOARD, DATASOURCE_LIST, THROUGHPUT, WORK_ITEM_AGE} from "../../app-routing.module";
+import {
+  CYCLE_TIME,
+  DASHBOARD,
+  DATASOURCE_LIST,
+  THROUGHPUT,
+  WORK_IN_PROGRESS,
+  WORK_ITEM_AGE
+} from "../../app-routing.module";
 import {JiraDataCenterService} from "../../services/jira-data-center.service";
 import {JiraCloudService} from "../../services/jira-cloud.service";
 import {WorkItemAgeChartComponent} from "../work-item-age-chart/work-item-age-chart.component";
@@ -149,4 +156,5 @@ export class LayoutComponent implements OnInit {
     }
   }
 
+  protected readonly WORK_IN_PROGRESS = WORK_IN_PROGRESS;
 }

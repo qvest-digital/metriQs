@@ -10,6 +10,7 @@ import {CycleTimeEntry} from "../models/cycleTimeEntry";
 import {Status} from "../models/status";
 import {ThroughputEntry} from "../models/throughputEntry";
 import {CanceledCycleEntry} from "../models/canceledCycleEntry";
+import {WorkInProgressEntry} from "../models/workInProgressEntry";
 
 export class TableNames {
   static readonly DATASOURCES = 'datasources';
@@ -21,17 +22,17 @@ export class TableNames {
   static readonly STATUS = 'status';
   static readonly THROUGHPUT = 'throughputs';
   static readonly CANCELED_CYCLE = 'canceledCycles';
+  static readonly WORK_IN_PROGRESS = 'workInProgress';
 }
 
 export const dbConfigCore: DBConfig = {
   name: 'metriqs-database-core',
   version: 1,
-  migrationFactory: migrationFactoryDataset,
+  migrationFactory: migrationFactoryCore,
   objectStoresMeta: [{
     store: TableNames.DATASOURCES,
     storeConfig: {keyPath: 'id', autoIncrement: true},
     storeSchema: [
-      {name: 'url', keypath: 'url', options: {unique: false}},
     ]
   }, {
     store: TableNames.APP_SETTINGS,
@@ -49,7 +50,7 @@ export const dbConfigCore: DBConfig = {
 export const dbConfigIssueData: DBConfig = {
   name: 'metriqs-database-issue-data',
   version: 1,
-  migrationFactory: migrationFactory,
+  migrationFactory: migrationFactoryIssues,
   objectStoresMeta: [ {
     store: TableNames.ISSUES,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
@@ -87,13 +88,16 @@ export const dbConfigIssueData: DBConfig = {
       storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
       ]
+    }, {
+      store: TableNames.WORK_IN_PROGRESS,
+      storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: []
     },
   ]
 };
 
 
 // Ahead of time compiles requires an exported function for factories
-export function migrationFactory() {
+export function migrationFactoryIssues() {
   return {
     1: (db: any, transaction: { objectStore: (arg0: string) => any; }) => {
       const issues = transaction.objectStore(TableNames.ISSUES);
@@ -106,7 +110,7 @@ export function migrationFactory() {
   };
 }
 
-export function migrationFactoryDataset() {
+export function migrationFactoryCore() {
   // The animal table was added with version 2 but none of the existing tables or data needed
   // to be modified so a migrator for that version is not included.
   return {
@@ -129,7 +133,7 @@ export class StorageService {
   async recreateDatabase(): Promise<boolean> {
     return this.deleteIssueDatabase().then(async () => {
       for (const storeMeta of dbConfigIssueData.objectStoresMeta) {
-        const store = await this.dbService.createObjectStore(storeMeta, migrationFactory);
+        const store = await this.dbService.createObjectStore(storeMeta, migrationFactoryIssues);
         // storeMeta.storeSchema.forEach(schema => {
         //   store.createIndex(schema.name, schema.keypath, schema.options);
         // });
@@ -295,5 +299,15 @@ export class StorageService {
   async saveThroughputData(througputs: ThroughputEntry[]) {
     this.dbService.selectDb(dbConfigIssueData.name);
     return firstValueFrom(this.dbService.bulkAdd<ThroughputEntry>(TableNames.THROUGHPUT, througputs));
+  }
+
+  async getWorkInProgressData() {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.getAll<WorkInProgressEntry>(TableNames.WORK_IN_PROGRESS));
+  }
+
+  saveWorkInProgressData(workInProgressEntries: WorkInProgressEntry[]) {
+    this.dbService.selectDb(dbConfigIssueData.name);
+    return firstValueFrom(this.dbService.bulkAdd<WorkInProgressEntry>(TableNames.WORK_IN_PROGRESS, workInProgressEntries));
   }
 }

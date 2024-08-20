@@ -144,6 +144,9 @@ export class JiraCloudService implements OnInit {
         const throughputs = this.businessLogicService.findThroughputEntries(cycleTimeEntries);
         await this.storageService.saveThroughputData(throughputs);
 
+        const workInProgressEntries = this.businessLogicService.computeWorkInProgress();
+
+
         return issues;
       } catch (error) {
         this.toastr.error('Failed to fetch issues from Jira', error!.toString());

@@ -8,6 +8,7 @@ import {Status, StatusCategory} from "../models/status";
 import {CanceledCycleEntry} from "../models/canceledCycleEntry";
 import {ThroughputEntry} from "../models/throughputEntry";
 import {count} from "rxjs";
+import {WorkInProgressEntry} from "../models/workInProgressEntry";
 
 @Injectable({
   providedIn: 'root'
@@ -304,5 +305,40 @@ export class BusinessLogicService {
     });
 
     return throughputEntries;
+  }
+
+
+  async computeWorkInProgress(): Promise<WorkInProgressEntry[]> {
+    const issueHistories: IssueHistory[] = await this.storageService.getAllIssueHistories();
+    const statuses: Status[] = await this.storageService.getAllStatuses();
+
+    const inProgressStatusIds = statuses
+      .filter(status => status.category === StatusCategory.InProgress)
+      .map(status => status.externalId);
+
+    const workInProgressMap = new Map<string, Set<number>>();
+
+    issueHistories.forEach(history => {
+      const dateStr = history.createdDate.toDateString();
+      if (!workInProgressMap.has(dateStr)) {
+        workInProgressMap.set(dateStr, new Set<number>());
+      }
+      if (inProgressStatusIds.includes(history.toValueId!)) {
+        workInProgressMap.get(dateStr)!.add(history.issueId);
+      }
+    });
+
+    const workInProgressEntries: WorkInProgressEntry[] = [];
+    workInProgressMap.forEach((issueIds, dateStr) => {
+      workInProgressEntries.push({
+        date: new Date(dateStr),
+        wip: issueIds.size,
+        issueIds: Array.from(issueIds)
+      });
+    });
+
+
+    await this.storageService.saveWorkInProgressData(workInProgressEntries);
+    return workInProgressEntries;
   }
 }
