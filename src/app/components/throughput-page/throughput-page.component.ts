@@ -43,8 +43,37 @@ export class ThroughputPageComponent implements OnInit {
 
   async ngOnInit() {
     const throughputData: ThroughputEntry[] = await this.storageService.getThroughputData();
-    this.lineChartData.datasets[0].data = throughputData.map(entry => entry.throughput);
-    this.lineChartData.labels = throughputData.map(entry => entry.date.toDateString());
+    const allDates = this.generateAllDates(throughputData);
+    const mappedData = this.mapDataToDates(allDates, throughputData);
+
+    this.lineChartData.datasets[0].data = mappedData.map(entry => entry.throughput);
+    this.lineChartData.labels = mappedData.map(entry => entry.date.toDateString());
     this.chart?.update();
+  }
+
+  private generateAllDates(data: ThroughputEntry[]): { date: Date, throughput: number }[] {
+    if (data.length === 0) return [];
+
+    const startDate = new Date(Math.min(...data.map(entry => entry.date.getTime())));
+    const endDate = new Date(Math.max(...data.map(entry => entry.date.getTime())));
+    const allDates = [];
+
+    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+      allDates.push({date: new Date(date), throughput: 0});
+    }
+
+    return allDates;
+  }
+
+  private mapDataToDates(allDates: { date: Date, throughput: number }[], data: ThroughputEntry[]): {
+    date: Date,
+    throughput: number
+  }[] {
+    const dataMap = new Map(data.map(entry => [entry.date.toDateString(), entry.throughput]));
+
+    return allDates.map(entry => ({
+      date: entry.date,
+      throughput: dataMap.get(entry.date.toDateString()) || 0
+    }));
   }
 }
