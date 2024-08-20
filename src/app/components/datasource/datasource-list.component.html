@@ -1,0 +1,17 @@
+<div>
+  <h2>Manage Datasource</h2>
+  <button mat-raised-button color="primary" (click)="createDatasource()">Create New Datasource</button>
+  <mat-list>
+    <mat-list-item *ngFor="let datasource of datasources">
+      <div>
+        {{ datasource.name }} - {{ datasource.jql }}
+        <button mat-icon-button (click)="editDatasource(datasource)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button (click)="removeDatasource(datasource)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </mat-list-item>
+  </mat-list>
+</div>

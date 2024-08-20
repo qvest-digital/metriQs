@@ -34,12 +34,12 @@ describe('BusinessLogicService', () => {
     const statuses: Status[] = [
       {
         externalId: 1, category: StatusCategory.Done,
-        dataSetId: 0,
+        dataSourceId: 0,
         name: 'resolved'
       },
       {
         externalId: 2, category: StatusCategory.Done,
-        dataSetId: 0,
+        dataSourceId: 0,
         name: 'wont do'
       }
     ];
@@ -59,12 +59,12 @@ describe('BusinessLogicService', () => {
     const statuses: Status[] = [
       {
         externalId: 1, category: StatusCategory.InProgress,
-        dataSetId: 0,
+        dataSourceId: 0,
         name: 'In Arbeit'
       },
       {
         externalId: 2, category: StatusCategory.InProgress,
-        dataSetId: 0,
+        dataSourceId: 0,
         name: 'in review'
       }
     ];
@@ -88,19 +88,19 @@ describe('BusinessLogicService', () => {
     const statuses: Status[] = [
       {
         externalId: 2, category: StatusCategory.InProgress,
-        dataSetId: 0,
+        dataSourceId: 0,
         name: 'in review',
         order: 2 // the second in-progress status
       },
       {
         externalId: 1, category: StatusCategory.InProgress,
-        dataSetId: 0,
+        dataSourceId: 0,
         name: 'In Arbeit',
         order: 1 // the first in-progress status
       },
       {
         externalId: 3, category: StatusCategory.Done,
-        dataSetId: 0,
+        dataSourceId: 0,
         name: 'Done',
         order: 3
       }
@@ -117,7 +117,7 @@ describe('BusinessLogicService', () => {
       id: 1,
       issueKey: 'ISSUE-1',
       title: 'Test Issue',
-      dataSetId: 1,
+      dataSourceId: 1,
       createdDate: new Date('2023-01-01'),
       status: 'Done',
       externalStatusId: 3,
@@ -127,7 +127,7 @@ describe('BusinessLogicService', () => {
     const issueHistories: IssueHistory[] = [
       {
         issueId: 1,
-        datasetId: 1,
+        datasourceId: 1,
         field: 'status',
         fromValue: 'To Do',
         fromValueId: 1,
@@ -137,7 +137,7 @@ describe('BusinessLogicService', () => {
       },
       {
         issueId: 1,
-        datasetId: 1,
+        datasourceId: 1,
         field: 'status',
         fromValue: 'In Progress',
         fromValueId: 2,
@@ -148,9 +148,9 @@ describe('BusinessLogicService', () => {
     ];
 
     const statuses: Status[] = [
-      {externalId: 1, category: StatusCategory.ToDo, dataSetId: 1, name: 'To Do'},
-      {externalId: 2, category: StatusCategory.InProgress, dataSetId: 1, name: 'In Progress'},
-      {externalId: 3, category: StatusCategory.Done, dataSetId: 1, name: 'Done'}
+      {externalId: 1, category: StatusCategory.ToDo, dataSourceId: 1, name: 'To Do'},
+      {externalId: 2, category: StatusCategory.InProgress, dataSourceId: 1, name: 'In Progress'},
+      {externalId: 3, category: StatusCategory.Done, dataSourceId: 1, name: 'Done'}
     ];
 
     storageService.getAllStatuses.and.returnValue(Promise.resolve(statuses));
@@ -182,7 +182,7 @@ describe('BusinessLogicService', () => {
       id: 1,
       issueKey: 'ISSUE-1',
       title: 'Test Issue',
-      dataSetId: 1,
+      dataSourceId: 1,
       createdDate: new Date('2023-01-01'),
       status: 'Done',
       externalStatusId: 3,
@@ -192,7 +192,7 @@ describe('BusinessLogicService', () => {
     const issueHistories: IssueHistory[] = [
       {
         issueId: 1,
-        datasetId: 1,
+        datasourceId: 1,
         field: 'status',
         fromValue: 'To Do',
         fromValueId: 1,
@@ -202,7 +202,7 @@ describe('BusinessLogicService', () => {
       },
       {
         issueId: 1,
-        datasetId: 1,
+        datasourceId: 1,
         field: 'status',
         fromValue: 'In Progress',
         fromValueId: 2,
@@ -212,7 +212,7 @@ describe('BusinessLogicService', () => {
       },
       {
         issueId: 1,
-        datasetId: 1,
+        datasourceId: 1,
         field: 'status',
         fromValue: 'Done',
         fromValueId: 3,
@@ -222,7 +222,7 @@ describe('BusinessLogicService', () => {
       },
       {
         issueId: 1,
-        datasetId: 1,
+        datasourceId: 1,
         field: 'status',
         fromValue: 'In Progress',
         fromValueId: 2,
@@ -233,9 +233,9 @@ describe('BusinessLogicService', () => {
     ];
 
     const statuses: Status[] = [
-      {externalId: 1, category: StatusCategory.ToDo, dataSetId: 1, name: 'To Do'},
-      {externalId: 2, category: StatusCategory.InProgress, dataSetId: 1, name: 'In Progress'},
-      {externalId: 3, category: StatusCategory.Done, dataSetId: 1, name: 'Done'}
+      {externalId: 1, category: StatusCategory.ToDo, dataSourceId: 1, name: 'To Do'},
+      {externalId: 2, category: StatusCategory.InProgress, dataSourceId: 1, name: 'In Progress'},
+      {externalId: 3, category: StatusCategory.Done, dataSourceId: 1, name: 'Done'}
     ];
 
     storageService.getAllStatuses.and.returnValue(Promise.resolve(statuses));

@@ -13,9 +13,16 @@ import {RouterLink, RouterOutlet} from "@angular/router";
 import {MatSelectModule} from "@angular/material/select";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {StorageService} from "../../services/storage.service";
-import {Dataset, DataSetType} from "../../models/dataset";
+import {Datasource, DataSourceType} from "../../models/datasource";
 import {ToastrService} from "ngx-toastr";
-import {CYCLE_TIME, DASHBOARD, MANAGE_DATASETS, THROUGHPUT, WORK_ITEM_AGE} from "../../app-routing.module";
+import {
+  CYCLE_TIME,
+  DASHBOARD,
+  DATASOURCE_LIST,
+  THROUGHPUT,
+  WORK_IN_PROGRESS,
+  WORK_ITEM_AGE
+} from "../../app-routing.module";
 import {JiraDataCenterService} from "../../services/jira-data-center.service";
 import {JiraCloudService} from "../../services/jira-cloud.service";
 import {WorkItemAgeChartComponent} from "../work-item-age-chart/work-item-age-chart.component";
@@ -45,6 +52,8 @@ export class LayoutComponent implements OnInit {
   protected readonly DASHBOARD = DASHBOARD;
   protected readonly CYCLE_TIME = CYCLE_TIME;
   protected readonly WORK_ITEM_AGE = WORK_ITEM_AGE;
+  protected readonly THROUGHPUT = THROUGHPUT;
+  protected readonly DATASOURCE_LIST = DATASOURCE_LIST;
 
   @ViewChild(WorkItemAgeChartComponent) workItemAgeChartComponent!: WorkItemAgeChartComponent;
 
@@ -62,34 +71,34 @@ export class LayoutComponent implements OnInit {
       shareReplay()
     );
 
-  datasets: Dataset[] = [];
-  selectedDataset: number | undefined;
+  datasources: Datasource[] = [];
+  selectedDatasource: number | undefined;
 
-  onDatasetChange(event: any) {
-    this.storageService.getDataset(event.value).then((dataset: Dataset) => {
-      this.toastr.success('Selected dataset: ' + dataset.name);
-      this.selectedDataset = dataset.id!;
-      this.storageService.saveAppSettings({selectedDatasetId: dataset.id!});
+  onDatasourceChange(event: any) {
+    this.storageService.getDatasource(event.value).then((dataset: Datasource) => {
+      this.toastr.success('Selected datasource: ' + dataset.name);
+      this.selectedDatasource = dataset.id!;
+      this.storageService.saveAppSettings({selectedDatasourceId: dataset.id!});
     });
   }
 
   ngOnInit(): void {
-    this.refreshDatasets();
+    this.refreshDatasources();
   }
 
-  refreshDatasets(): void {
-    this.storageService.getAllDatasets().then((datasets: Dataset[]) => {
-      this.datasets = datasets;
-      if (this.datasets.length > 0) {
-        this.selectedDataset = this.datasets[0].id!;
+  refreshDatasources(): void {
+    this.storageService.getAllDatasources().then((datasource: Datasource[]) => {
+      this.datasources = datasource;
+      if (this.datasources.length > 0) {
+        this.selectedDatasource = this.datasources[0].id!;
       }
     });
   }
 
   async login() {
-    if (this.selectedDataset) {
-      const selectedDataset = this.datasets.find(dataset => dataset.id === this.selectedDataset);
-      await this.storageService.saveAppSettings({selectedDatasetId: this.selectedDataset});
+    if (this.selectedDatasource) {
+      const selectedDataset = this.datasources.find(dataset => dataset.id === this.selectedDatasource);
+      await this.storageService.saveAppSettings({selectedDatasourceId: this.selectedDatasource});
       if (selectedDataset) {
         if (selectedDataset.type === 'JIRA_CLOUD') {
           this.loginToJiraCloud();
@@ -102,7 +111,7 @@ export class LayoutComponent implements OnInit {
 
   async loginToJiraCloud() {
     try {
-      this.jiraCloudService.login(this.selectedDataset!);
+      this.jiraCloudService.login(this.selectedDatasource!);
     } catch (error) {
       this.toastr.error(error!.toString(), 'Failed to log in to Jira');
     }
@@ -110,7 +119,7 @@ export class LayoutComponent implements OnInit {
 
   loginToJiraDataCenter() {
     try {
-      this.jiraDataCenterService.login(this.selectedDataset!);
+      this.jiraDataCenterService.login(this.selectedDatasource!);
       this.toastr.success('Successfully logged in to Jira');
     } catch (error) {
       this.toastr.error(error!.toString(), 'Failed to log in to Jira');
@@ -118,12 +127,12 @@ export class LayoutComponent implements OnInit {
   }
 
   async refreshIssues(silent = false) {
-    if (this.selectedDataset) {
-      const selectedDataset = this.datasets.find(dataset => dataset.id === this.selectedDataset);
+    if (this.selectedDatasource) {
+      const selectedDataset = this.datasources.find(dataset => dataset.id === this.selectedDatasource);
       if (selectedDataset) {
-        if (selectedDataset.type === DataSetType.JIRA_CLOUD) {
+        if (selectedDataset.type === DataSourceType.JIRA_CLOUD) {
 
-          await this.jiraCloudService.getAndSaveIssues(this.selectedDataset!);
+          await this.jiraCloudService.getAndSaveIssues(this.selectedDatasource!);
           try {
             if (!silent)
               this.toastr.success('Successfully fetched issues from Jira');
@@ -139,7 +148,7 @@ export class LayoutComponent implements OnInit {
   }
 
   async clearDatabase() {
-    const success = await this.storageService.clearIssueData();
+    const success = await this.storageService.recreateDatabase();
     if (success) {
       this.toastr.success('Successfully cleared all data');
     } else {
@@ -147,6 +156,5 @@ export class LayoutComponent implements OnInit {
     }
   }
 
-    protected readonly THROUGHPUT = THROUGHPUT;
-  protected readonly MANAGE_DATASETS = MANAGE_DATASETS;
+  protected readonly WORK_IN_PROGRESS = WORK_IN_PROGRESS;
 }

@@ -6,6 +6,9 @@ import {IssueHistory} from "../models/issueHistory";
 import {CycleTimeEntry} from "../models/cycleTimeEntry";
 import {Status, StatusCategory} from "../models/status";
 import {CanceledCycleEntry} from "../models/canceledCycleEntry";
+import {ThroughputEntry} from "../models/throughputEntry";
+import {count} from "rxjs";
+import {WorkInProgressEntry} from "../models/workInProgressEntry";
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +35,7 @@ export class BusinessLogicService {
       // Add a separate IssueHistory entry for the issue with createdDate
       const issueCreatedHistory: IssueHistory = {
         issueId: issue.id!,
-        datasetId: issue.dataSetId,
+        datasourceId: issue.dataSourceId,
         fromValue: '',
         toValueId: Number.parseInt(findStatusHistory.items[0].from),
         toValue: firstStatusChange.items[0].fromString,
@@ -52,7 +55,7 @@ export class BusinessLogicService {
       }) => {
         const issueHistory: IssueHistory = {
           issueId: issue.id!,
-          datasetId: issue.dataSetId,
+          datasourceId: issue.dataSourceId,
           fromValue: item.fromString || '',
           fromValueId: Number.parseInt(item.from),
           toValueId: Number.parseInt(item.to),
@@ -121,7 +124,7 @@ export class BusinessLogicService {
 
     issues.forEach(issue => {
       const status: Status = {
-        dataSetId: issue.dataSetId,
+        dataSourceId: issue.dataSourceId,
         name: issue.status,
         externalId: issue.externalStatusId
       };
@@ -133,9 +136,13 @@ export class BusinessLogicService {
       if (history.field === 'status') {
         if (history.fromValueId && !this.stateExistsInSet(statuses, history.fromValueId!)) {
 
-          statuses.push({dataSetId: history.datasetId, name: history.fromValue, externalId: history.fromValueId!});
+          statuses.push({
+            dataSourceId: history.datasourceId,
+            name: history.fromValue,
+            externalId: history.fromValueId!
+          });
         } else if (history.toValueId && !this.stateExistsInSet(statuses, history.toValueId!)) {
-          statuses.push({dataSetId: history.datasetId, name: history.toValue, externalId: history.toValueId!});
+          statuses.push({dataSourceId: history.datasourceId, name: history.toValue, externalId: history.toValueId!});
         }
       }
     });
@@ -268,5 +275,70 @@ export class BusinessLogicService {
     }
 
     return {wiaEntry: workItemAgeEntry!, canEntries: canceledCycleEntries, cycleTEntries: cycleTimeEntries};
+  }
+
+  findThroughputEntries(cycleTimeEntries: CycleTimeEntry[]): ThroughputEntry[] {
+    const throughputEntries: ThroughputEntry[] = [];
+    const throughputMap: Map<string, { count: number, issueIds: number[] }> = new Map();
+
+    // Count the number of CycleTimeEntries resolved on the same day and collect issue IDs
+    cycleTimeEntries.forEach(entry => {
+      const resolvedDateStr = entry.resolvedDate.toISOString().split('T')[0]; // Get the date part only
+      if (throughputMap.has(resolvedDateStr)) {
+        const entryData = throughputMap.get(resolvedDateStr)!;
+        entryData.count += 1;
+        entryData.issueIds.push(entry.issueId);
+      } else {
+        throughputMap.set(resolvedDateStr, {count: 1, issueIds: [entry.issueId]});
+      }
+    });
+
+    // Create ThroughputEntry objects using the counts from the map
+    throughputMap.forEach((data, dateStr) => {
+      const date = new Date(dateStr);
+      const throughputEntry: ThroughputEntry = {
+        date: date,
+        throughput: data.count,
+        issueIds: data.issueIds
+      };
+      throughputEntries.push(throughputEntry);
+    });
+
+    return throughputEntries;
+  }
+
+
+  async computeWorkInProgress(): Promise<WorkInProgressEntry[]> {
+    const issueHistories: IssueHistory[] = await this.storageService.getAllIssueHistories();
+    const statuses: Status[] = await this.storageService.getAllStatuses();
+
+    const inProgressStatusIds = statuses
+      .filter(status => status.category === StatusCategory.InProgress)
+      .map(status => status.externalId);
+
+    const workInProgressMap = new Map<string, Set<number>>();
+
+    issueHistories.forEach(history => {
+      const dateStr = history.createdDate.toDateString();
+      if (!workInProgressMap.has(dateStr)) {
+        workInProgressMap.set(dateStr, new Set<number>());
+      }
+      if (inProgressStatusIds.includes(history.toValueId!)) {
+        workInProgressMap.get(dateStr)!.add(history.issueId);
+      }
+    });
+
+    const workInProgressEntries: WorkInProgressEntry[] = [];
+    workInProgressMap.forEach((issueIds, dateStr) => {
+      workInProgressEntries.push({
+        date: new Date(dateStr),
+        wip: issueIds.size,
+        issueIds: Array.from(issueIds)
+      });
+    });
+
+
+    await this.storageService.saveWorkInProgressData(workInProgressEntries);
+    return workInProgressEntries;
   }
 }

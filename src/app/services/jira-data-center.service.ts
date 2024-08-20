@@ -64,7 +64,7 @@ export class JiraDataCenterService implements OnInit {
 
   async handleCallback(code: string): Promise<void> {
     const appSettings = await this.databaseService.getAppSettings();
-    const dataset = await this.databaseService.getDataset(appSettings.selectedDatasetId);
+    const datasource = await this.databaseService.getDatasource(appSettings.selectedDatasourceId);
 
     const body = new HttpParams()
       .set('grant_type', 'authorization_code')
@@ -73,7 +73,7 @@ export class JiraDataCenterService implements OnInit {
       .set('code', code)
       .set('redirect_uri', this.redirectUri);
 
-    const tokenUrl = dataset.baseUrl + '/rest/oauth2/latest/token';
+    const tokenUrl = datasource.baseUrl + '/rest/oauth2/latest/token';
     const tokenResponse
       :
       any = await firstValueFrom(this.http.post(tokenUrl, body.toString(), {
@@ -82,14 +82,14 @@ export class JiraDataCenterService implements OnInit {
       }),
     }));
 
-    dataset.access_token = tokenResponse.access_token;
-    await this.databaseService.updateDataset(dataset);
+    datasource.access_token = tokenResponse.access_token;
+    await this.databaseService.updateDatasource(datasource);
 
     this.router.navigate([DASHBOARD]);
   }
 
   async getIssues(dataSetId: number): Promise<Issue[]> {
-    const config = await this.databaseService.getDataset(dataSetId);
+    const config = await this.databaseService.getDatasource(dataSetId);
 
     if (config !== null && config?.access_token
     ) {
@@ -111,7 +111,7 @@ export class JiraDataCenterService implements OnInit {
       const issues: Issue[] = response!.issues!.map((issue: Version3.Version3Models.Issue) => ({
         issueKey: issue.key,
         title: issue.fields.summary,
-        dataSetId: config.id!,
+        dataSourceId: config.id!,
         createdDate: new Date(issue.fields.created),
         status: issue.fields.status!.name!,
         externalStatusId: Number.parseInt(issue.fields.status!.id!),
