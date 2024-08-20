@@ -100,13 +100,14 @@ export class CycleTimeScatterplotComponent {
   async loadData() {
     const items = await this.databaseService.getCycleTimeData();
     items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
+    this.percentilValue = this.businessLogicService.computePercentile(items.map(item => item.cycleTime), 80);
+    this.updateAnnotationLine(this.percentilValue);
     this.scatterChartData.datasets[0].data = items.map((item, index) => ({
       x: index,
       y: item.cycleTime, // Assuming age is a numeric value representing the age of the work item
       issueKey: item.issueKey // Add issueKey to the data point
     }));
-    this.percentilValue = this.businessLogicService.computePercentile(items.map(item => item.cycleTime), 80);
-    this.updateAnnotationLine(this.percentilValue);
+
     this.chart?.update();
     this.toasts.success('Successfully loaded cycle time data');
   }
@@ -120,11 +121,15 @@ export class CycleTimeScatterplotComponent {
   }
 
   updateAnnotationLine(newValue: number) {
-    const annotations: any = this.scatterChartOptions!.plugins!.annotation!.annotations;
-    if (annotations.line1) {
-      annotations.line1.yMin = newValue;
-      annotations.line1.yMax = newValue;
-      this.chart?.update();
+    if (this.chart && this.chart.options && this.chart.options.plugins && this.chart.options.plugins.annotation) {
+      const annotations = this.chart.options.plugins.annotation.annotations as Record<string, any>;
+      if (annotations['line1']) {
+        annotations['line1'].borderColor = 'blue';
+        annotations['line1'].yMin = newValue;
+        annotations['line1'].yMax = newValue;
+        this.chart.update();
+      }
     }
   }
+
 }

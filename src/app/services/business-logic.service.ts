@@ -3,8 +3,9 @@ import {Issue} from "../models/issue";
 import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
 import {StorageService} from "./storage.service";
 import {IssueHistory} from "../models/issueHistory";
-import {CycletimeEntry} from "../models/cycletimeEntry";
+import {CycleTimeEntry} from "../models/cycleTimeEntry";
 import {Status, StatusCategory} from "../models/status";
+import {CanceledCycleEntry} from "../models/canceledCycleEntry";
 
 @Injectable({
   providedIn: 'root'
@@ -65,30 +66,6 @@ export class BusinessLogicService {
     return issueHistories;
   }
 
-
-  async map2WorkItemAgeEntries(issues: Issue[]) {
-    const workItemAgeEntries: WorkItemAgeEntry[] = [];
-    for (const issue of issues) {
-
-      const historyEntry = await this.findFirstInProgressStatusChange(issue);
-      if (!historyEntry) {
-        continue;
-      }
-      const workItemAgeEntry: WorkItemAgeEntry = {
-        issueId: issue.id!,
-        issueKey: issue.issueKey,
-        status: issue.status,
-        externalStatusId: issue.externalStatusId,
-        title: issue.title,
-        inProgressStatusDate: historyEntry.createdDate,
-        age: this.calculateAge(historyEntry.createdDate, new Date()),
-      };
-      workItemAgeEntries.push(workItemAgeEntry);
-    }
-    return workItemAgeEntries;
-
-  }
-
   async getAllInProgressStatuses(): Promise<Status[]> {
     const allStatuses = await this.storageService.getAllStatuses();
     return allStatuses.filter(status => status.category === StatusCategory.InProgress);
@@ -113,41 +90,30 @@ export class BusinessLogicService {
   }
 
 
-  map2CycleTimeEntries(issueHistories: IssueHistory[], issue: Issue): CycletimeEntry[] {
-    const cycleTimeEntries: CycletimeEntry[] = [];
+  public async findLatestResolvedIssueHistory(issueHistories: IssueHistory[]): Promise<IssueHistory | undefined> {
+    const allStatuses = await this.storageService.getAllStatuses();
+    const doneStatusIds = allStatuses
+      .filter(status => status.category === StatusCategory.Done)
+      .map(status => status.externalId);
 
-    if (issue && issueHistories.length > 0) {
-      const latestClosedDate = this.findLatestResolvedIssueHistory(issueHistories);
-      const firstInProgressDate = this.findFirstInProgressIssueHistory(issueHistories);
+    const resolvedHistories = issueHistories
+      .filter(history => history.field === 'status' && doneStatusIds.includes(history.toValueId!))
+      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
 
-      if (latestClosedDate != undefined && firstInProgressDate != undefined) {
-        const cycleTimeEntry: CycletimeEntry = {
-          inProgressState: firstInProgressDate.toValue,
-          resolvedState: latestClosedDate.toValue,
-          resolvedDate: latestClosedDate!.createdDate,
-          inProgressDate: firstInProgressDate!.createdDate,
-          issueId: issue.id!,
-          issueKey: issue.issueKey,
-          title: issue.title,
-          cycleTime: this.calculateAge(firstInProgressDate!.createdDate, latestClosedDate!.createdDate)
-        };
-
-        cycleTimeEntries.push(cycleTimeEntry);
-      }
-    }
-    return cycleTimeEntries;
+    return resolvedHistories.length > 0 ? resolvedHistories[0] : undefined;
   }
 
-  private findLatestResolvedIssueHistory(issueHistories: IssueHistory[]): IssueHistory | undefined {
-    return issueHistories
-      .filter(history => history.field === 'status' && history.toValue === 'Done')
-      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())[0];
-  }
+  public async findFirstInProgressIssueHistory(issueHistories: IssueHistory[]): Promise<IssueHistory | undefined> {
+    const allStatuses = await this.storageService.getAllStatuses();
+    const doneStatusIds = allStatuses
+      .filter(status => status.category === StatusCategory.InProgress)
+      .map(status => status.externalId);
 
-  private findFirstInProgressIssueHistory(issueHistories: IssueHistory[]): IssueHistory | undefined {
-    return issueHistories
-      .filter(history => history.field === 'status' && history.toValue === 'In Progress')
-      .sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())[0];
+    const resolvedHistories = issueHistories
+      .filter(history => history.field === 'status' && doneStatusIds.includes(history.toValueId!))
+      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
+
+    return resolvedHistories.length > 0 ? resolvedHistories[0] : undefined;
   }
 
   public findAllNewStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
@@ -212,5 +178,95 @@ export class BusinessLogicService {
 
     // Return the cycle time at the calculated index
     return sortedCycleTimes[index];
+  }
+
+  async analyzeIssueHistoriesForStatusChanges(issueHistories: IssueHistory[], i: Issue): Promise<{
+    wiaEntry: WorkItemAgeEntry,
+    canEntries: CanceledCycleEntry[],
+    cycleTEntries: CycleTimeEntry[]
+  }> {
+    const cycleTimeEntries: CycleTimeEntry[] = [];
+    const canceledCycleEntries: CanceledCycleEntry[] = [];
+    let workItemAgeEntry: WorkItemAgeEntry | null = null;
+
+    const allStatuses = await this.storageService.getAllStatuses();
+    const inProgressStatusIds = allStatuses.filter(status => status.category === StatusCategory.InProgress).map(status => status.externalId);
+    const doneStatusIds = allStatuses.filter(status => status.category === StatusCategory.Done).map(status => status.externalId);
+    const toDoProgressStatusIds = allStatuses.filter(status => status.category === StatusCategory.ToDo).map(status => status.externalId);
+
+    let startCycleEntry: IssueHistory | null = null;
+    let endCycleEntry: IssueHistory | null = null;
+    let canceledCycleEntry: IssueHistory | null = null;
+
+    for (const history of issueHistories.sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())) {
+      if (history.field === 'status') {
+        if (inProgressStatusIds.includes(history.toValueId!)) {
+          if (toDoProgressStatusIds.includes(history.fromValueId!) || doneStatusIds.includes(history.fromValueId!)) {
+            // Start a new cycle if the issue switches into an InProgress state from a state that is not InProgress
+            startCycleEntry = history;
+          }
+        } else if (doneStatusIds.includes(history.toValueId!)) {
+          if (inProgressStatusIds.includes(history.fromValueId!)) {
+            endCycleEntry = history;
+          }
+        } else if (toDoProgressStatusIds.includes(history.toValueId!) && inProgressStatusIds.includes(history.fromValueId!)) {
+          canceledCycleEntry = history;
+        }
+        if (startCycleEntry && endCycleEntry) {
+          // End the cycle if the issue switches into a Done state
+          const cycleTimeEntry: CycleTimeEntry = {
+            status: endCycleEntry.toValue,
+            externalStatusId: endCycleEntry.toValueId!,
+            inProgressState: startCycleEntry.toValue,
+            inProgressDate: startCycleEntry.createdDate,
+            externalInProgressStatusId: startCycleEntry.toValueId!,
+            resolvedState: endCycleEntry.toValue,
+            resolvedDate: endCycleEntry.createdDate,
+            externalResolvedStatusId: endCycleEntry.toValueId!,
+            issueId: i.id!,
+            issueKey: i.issueKey,
+            title: i.title,
+            cycleTime: this.calculateAge(startCycleEntry.createdDate, endCycleEntry.createdDate)
+          };
+          cycleTimeEntries.push(cycleTimeEntry);
+          startCycleEntry = null;
+          endCycleEntry = null;
+        } else if (startCycleEntry && canceledCycleEntry) {
+          //create a canceled cycle entry
+          const canceledCycle: CanceledCycleEntry = {
+            status: canceledCycleEntry.toValue,
+            externalStatusId: canceledCycleEntry.toValueId!,
+            inProgressState: startCycleEntry.toValue,
+            inProgressDate: startCycleEntry.createdDate,
+            externalInProgressStatusId: startCycleEntry.toValueId!,
+            resolvedState: canceledCycleEntry.toValue,
+            resolvedDate: canceledCycleEntry.createdDate,
+            externalResolvedStatusId: canceledCycleEntry.toValueId!,
+            issueId: i.id!,
+            issueKey: i.issueKey,
+            title: i.title,
+            wastedTime: this.calculateAge(startCycleEntry.createdDate, canceledCycleEntry.createdDate)
+          };
+          canceledCycleEntries.push(canceledCycle);
+          startCycleEntry = null;
+          canceledCycleEntry = null;
+        }
+      }
+      if (startCycleEntry) {
+        workItemAgeEntry = {
+          status: i.status,
+          externalStatusId: i.externalStatusId,
+          inProgressState: startCycleEntry.toValue,
+          inProgressDate: startCycleEntry.createdDate,
+          externalInProgressStatusId: startCycleEntry.toValueId!,
+          issueId: i.id!,
+          issueKey: i.issueKey,
+          title: i.title,
+          age: this.calculateAge(startCycleEntry.createdDate, new Date())
+        };
+      }
+    }
+
+    return {wiaEntry: workItemAgeEntry!, canEntries: canceledCycleEntries, cycleTEntries: cycleTimeEntries};
   }
 }

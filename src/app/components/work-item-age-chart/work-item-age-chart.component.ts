@@ -50,18 +50,18 @@ export class WorkItemAgeChartComponent implements OnInit, OnChanges {
       },
       annotation: {
         annotations: {
-          line1: {
-            type: 'line',
-            yMin: 18,
-            yMax: 18,
-            borderColor: 'red',
-            borderWidth: 2,
-            label: {
-              content: 'SLE Threshold (80%)',
-              position: 'center',
-              display: true
-            }
-          }
+          // line1: {
+          //       type: 'line',
+          //       yMin: 0,
+          //       yMax: 0,
+          //       borderColor: 'red',
+          //       borderWidth: 2,
+          //       label: {
+          //         content: 'SLE Threshold (80%)',
+          //         position: 'center',
+          //         display: true
+          //       }
+          //     }
         }
       }
     },
@@ -152,7 +152,7 @@ export class WorkItemAgeChartComponent implements OnInit, OnChanges {
         display: true
       }
     }
-    this.chart?.update();
+    this.updateChart();
     // }
   }
 }

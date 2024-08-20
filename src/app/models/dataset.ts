@@ -1,9 +1,9 @@
-// src/app/models/configuration.ts
 export enum DataSetType {
   JIRA_CLOUD = 'JIRA_CLOUD',
   JIRA_DATACENTER = 'JIRA_DATACENTER',
 }
 
+//FIXME: rename this to datasource
 export interface Dataset {
   type: DataSetType;
   baseUrl: string;
