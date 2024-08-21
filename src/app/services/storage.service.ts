@@ -210,7 +210,7 @@ export class StorageService {
 
   async getAppSettings(): Promise<AppSettings> {
     this.dbService.selectDb(dbConfigCore.name);
-    return firstValueFrom(this.dbService.getAll<AppSettings>(TableNames.APP_SETTINGS)).then(datasets => datasets[0]);
+    return firstValueFrom(this.dbService.getAll<AppSettings>(TableNames.APP_SETTINGS)).then(settings => settings[0]);
   }
 
   async deleteIssueDatabase() {

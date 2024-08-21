@@ -75,10 +75,10 @@ export class LayoutComponent implements OnInit {
   selectedDatasource: number | undefined;
 
   onDatasourceChange(event: any) {
-    this.storageService.getDatasource(event.value).then((dataset: Datasource) => {
+    this.storageService.getDatasource(event.value).then(async (dataset: Datasource) => {
       this.toastr.success('Selected datasource: ' + dataset.name);
       this.selectedDatasource = dataset.id!;
-      this.storageService.saveAppSettings({selectedDatasourceId: dataset.id!});
+      await this.storageService.saveAppSettings({selectedDatasourceId: dataset.id!});
     });
   }
 
@@ -86,13 +86,9 @@ export class LayoutComponent implements OnInit {
     this.refreshDatasources();
   }
 
-  refreshDatasources(): void {
-    this.storageService.getAllDatasources().then((datasource: Datasource[]) => {
-      this.datasources = datasource;
-      if (this.datasources.length > 0) {
-        this.selectedDatasource = this.datasources[0].id!;
-      }
-    });
+  async refreshDatasources() {
+    this.datasources = await this.storageService.getAllDatasources();
+    this.selectedDatasource = (await this.storageService.getAppSettings()).selectedDatasourceId;
   }
 
   async login() {
