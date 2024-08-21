@@ -16,12 +16,12 @@ import {StorageService} from "../../services/storage.service";
 import {Datasource, DataSourceType} from "../../models/datasource";
 import {ToastrService} from "ngx-toastr";
 import {
-  CYCLE_TIME,
-  DASHBOARD,
-  DATASOURCE_LIST,
-  THROUGHPUT,
-  WORK_IN_PROGRESS,
-  WORK_ITEM_AGE
+    CYCLE_TIME,
+    DASHBOARD,
+    DATASOURCE_LIST, MONTE_CARLO,
+    THROUGHPUT,
+    WORK_IN_PROGRESS,
+    WORK_ITEM_AGE
 } from "../../app-routing.module";
 import {JiraDataCenterService} from "../../services/jira-data-center.service";
 import {JiraCloudService} from "../../services/jira-cloud.service";
@@ -157,4 +157,5 @@ export class LayoutComponent implements OnInit {
   }
 
   protected readonly WORK_IN_PROGRESS = WORK_IN_PROGRESS;
+    protected readonly MONTE_CARLO = MONTE_CARLO;
 }

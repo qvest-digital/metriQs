@@ -9,6 +9,7 @@ import {CycleTimePage} from "./components/cycle-time-page/cycle-time.page";
 import {DatasourceEditComponent} from "./components/datasource/datasource-edit.component";
 import {ThroughputPageComponent} from "./components/throughput-page/throughput-page.component";
 import {WorkInProgressPageComponent} from "./components/work-in-progress/work-in-progress-page.component";
+import {MonteCarloPageComponent} from "./components/monte-carlo/monte-carlo-page.component";
 
 export const CALLBACK_JIRA_CLOUD = 'callbackJiraCloud';
 export const CALLBACK_JIRA_DATA_CENTER = 'callbackJiraDataCenter';
@@ -19,6 +20,7 @@ export const DATASOURCE_LIST = 'datasources';
 export const DATASOURCE_CREATE = DATASOURCE_LIST + '/create';
 export const THROUGHPUT = 'throughput';
 export const WORK_IN_PROGRESS = 'work-in-progress';
+export const MONTE_CARLO = 'monte-carlo';
 
 export const routes: Routes = [
   {path: '', redirectTo: `/${DASHBOARD}`, pathMatch: 'full'},
@@ -31,7 +33,8 @@ export const routes: Routes = [
   {path: DATASOURCE_LIST, component: DatasourceListComponent},
   {path: DATASOURCE_LIST + '/:id', component: DatasourceEditComponent},
   {path: DATASOURCE_CREATE, component: DatasourceEditComponent},
-  {path: WORK_IN_PROGRESS, component: WorkInProgressPageComponent}
+  {path: WORK_IN_PROGRESS, component: WorkInProgressPageComponent},
+  {path: MONTE_CARLO, component: MonteCarloPageComponent},
 ];
 
 @NgModule({
