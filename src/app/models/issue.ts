@@ -1,5 +1,5 @@
 export interface Issue {
-  dataSourceId: number;
+  datasourceId: number;
   issueKey: string;
   title: string;
   createdDate: Date;

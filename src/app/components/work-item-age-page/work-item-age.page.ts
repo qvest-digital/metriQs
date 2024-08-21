@@ -81,9 +81,10 @@ export class WorkItemAgePage implements OnInit {
   }
 
   async loadData() {
-    let data = await this.databaseService.getWorkItemAgeData();
+    const appSettings = await this.databaseService.getAppSettings();
+    let data = await this.databaseService.getWorkItemAgeData(appSettings.selectedDatasourceId);
 
-    const statusInProgress = await this.databaseService.getAllStatuses().then(statuses => {
+    const statusInProgress = await this.databaseService.getAllStatuses(appSettings.selectedDatasourceId).then(statuses => {
       return statuses.filter(status => status.category === StatusCategory.InProgress);
     })
 

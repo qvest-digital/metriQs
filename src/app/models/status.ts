@@ -5,7 +5,7 @@ export enum StatusCategory {
 }
 
 export interface Status {
-  dataSourceId: number;
+  datasourceId: number;
   id?: number;
   name: string;
   color?: string;

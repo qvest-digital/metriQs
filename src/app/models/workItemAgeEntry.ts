@@ -1,5 +1,6 @@
 export interface WorkItemAgeEntry {
   id?: number;
+  datasourceId: number;
   issueId: number;
   issueKey: string;
   title: string;

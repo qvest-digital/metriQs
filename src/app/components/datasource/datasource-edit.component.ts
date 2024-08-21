@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import { StorageService } from '../../services/storage.service';
-import {Datasource, DataSourceType} from '../../models/datasource';
+import {Datasource, DatasourceType} from '../../models/datasource';
 import {MatGridList, MatGridTile} from "@angular/material/grid-list";
 import {MatError, MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatInput} from "@angular/material/input";
@@ -36,7 +36,7 @@ import {StatusMappingComponent} from "../status-mapping/status-mapping.component
 export class DatasourceEditComponent implements OnInit {
   datasourceForm: FormGroup;
   datasourceId?: number;
-  datasourceTypes = Object.values(DataSourceType);
+  datasourceTypes = Object.values(DatasourceType);
   currentStates: Status[] = [];
 
   constructor(
@@ -64,7 +64,7 @@ export class DatasourceEditComponent implements OnInit {
         jql: dataset.jql ?? '',
         type: dataset.type ?? this.datasourceTypes[0]
       });
-      this.currentStates = await this.storageService.getAllStatuses();
+      this.currentStates = await this.storageService.getAllStatuses(this.datasourceId);
     }
   }
 
@@ -78,7 +78,7 @@ export class DatasourceEditComponent implements OnInit {
         await this.storageService.updateDatasource(updatedDataset);
         this.toastr.success('Datasource updated');
       } else {
-        await this.storageService.createDataset(updatedDataset);
+        await this.storageService.createDatasource(updatedDataset);
         this.toastr.success('Datasource created');
       }
       this.router.navigate([DATASOURCE_LIST]);

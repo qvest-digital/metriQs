@@ -42,7 +42,8 @@ export class ThroughputPageComponent implements OnInit {
   constructor(private storageService: StorageService) {}
 
   async ngOnInit() {
-    const throughputData: ThroughputEntry[] = await this.storageService.getThroughputData();
+    const appSettings = await this.storageService.getAppSettings();
+    const throughputData: ThroughputEntry[] = await this.storageService.getThroughputData(appSettings.selectedDatasourceId);
     const allDates = this.generateAllDates(throughputData);
     const mappedData = this.mapDataToDates(allDates, throughputData);
 

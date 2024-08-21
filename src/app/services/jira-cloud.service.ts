@@ -105,7 +105,7 @@ export class JiraCloudService implements OnInit {
         });
 
         //if response successfully received, clear all data
-        await this.storageService.clearAllData();
+        await this.storageService.clearAllIssueData(dataSourceId);
 
         // Manually map the response to Issue objects
         const issues: Issue[] = [];
@@ -113,7 +113,7 @@ export class JiraCloudService implements OnInit {
           let i: Issue = {
             issueKey: issue.key,
             title: issue.fields.summary,
-            dataSourceId: datasource.id!,
+            datasourceId: datasource.id!,
             createdDate: new Date(issue.fields.created),
             status: issue.fields.status!.name!,
             externalStatusId: Number.parseInt(issue.fields.status!.id!),
@@ -132,19 +132,19 @@ export class JiraCloudService implements OnInit {
           if (entryHolder.canEntries.length > 0)
             await this.storageService.addCanceledCycleEntries(entryHolder.canEntries);
         }
-        const allHistories = await this.storageService.getAllIssueHistories();
+        const allHistories = await this.storageService.getAllIssueHistories(dataSourceId);
 
         let newStatesFound = this.businessLogicService.findAllNewStatuses(issues, allHistories);
-        const allStatuses = await this.storageService.getAllStatuses();
+        const allStatuses = await this.storageService.getAllStatuses(dataSourceId);
 
         newStatesFound = this.businessLogicService.filterOutMappedStatuses(newStatesFound, allStatuses);
         await this.storageService.addStatuses(newStatesFound);
 
-        const cycleTimeEntries = await this.storageService.getCycleTimeData();
+        const cycleTimeEntries = await this.storageService.getCycleTimeData(dataSourceId);
         const throughputs = this.businessLogicService.findThroughputEntries(cycleTimeEntries);
         await this.storageService.saveThroughputData(throughputs);
 
-        const workInProgressEntries = this.businessLogicService.computeWorkInProgress();
+        const workInProgressEntries = this.businessLogicService.computeWorkInProgress(dataSourceId);
 
 
         return issues;

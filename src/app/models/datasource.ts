@@ -1,11 +1,11 @@
-export enum DataSourceType {
+export enum DatasourceType {
   JIRA_CLOUD = 'JIRA_CLOUD',
   JIRA_DATACENTER = 'JIRA_DATACENTER',
 }
 
 //FIXME: rename this to datasource
 export interface Datasource {
-  type: DataSourceType;
+  type: DatasourceType;
   baseUrl: string;
   access_token: string;
   cloudId?: string;

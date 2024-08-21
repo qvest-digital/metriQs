@@ -85,7 +85,8 @@ export class MonteCarloPageComponent implements OnInit {
   }
 
   private async getThroughputsFromLast20Days(): Promise<number[]> {
-    const throughputEntries = await this.storageService.getThroughputData();
+    const appSettings = await this.storageService.getAppSettings();
+    const throughputEntries = await this.storageService.getThroughputData(appSettings.selectedDatasourceId);
     const today = new Date();
     const last20DaysThroughputs: number[] = [];
 

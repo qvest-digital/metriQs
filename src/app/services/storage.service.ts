@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {Datasource} from '../models/datasource';
 import {Issue} from "../models/issue";
 import {WorkItemAgeEntry} from "../models/workItemAgeEntry";
-import {NgxIndexedDBModule, DBConfig, NgxIndexedDBService} from 'ngx-indexed-db';
+import {DBConfig, NgxIndexedDBService} from 'ngx-indexed-db';
 import {firstValueFrom} from "rxjs";
 import {AppSettings} from "../models/appSettings";
 import {IssueHistory} from "../models/issueHistory";
@@ -32,8 +32,7 @@ export const dbConfigCore: DBConfig = {
   objectStoresMeta: [{
     store: TableNames.DATASOURCES,
     storeConfig: {keyPath: 'id', autoIncrement: true},
-    storeSchema: [
-    ]
+    storeSchema: []
   }, {
     store: TableNames.APP_SETTINGS,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: []
@@ -42,55 +41,63 @@ export const dbConfigCore: DBConfig = {
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
       {name: 'name', keypath: 'name', options: {unique: false}},
       {name: 'category', keypath: 'category', options: {unique: false}},
-      {name: 'dataSetId', keypath: 'dataSetId', options: { unique: false}},
+      {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
     ]
   },
-  ]};
+  ]
+};
 
 export const dbConfigIssueData: DBConfig = {
   name: 'metriqs-database-issue-data',
   version: 1,
   migrationFactory: migrationFactoryIssues,
-  objectStoresMeta: [ {
+  objectStoresMeta: [{
     store: TableNames.ISSUES,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
-      {name: 'dataSourceId', keypath: 'dataSourceId', options: {unique: false}},
+      {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
       {name: 'issueKey', keypath: 'issueKey', options: {unique: false}},
       {name: 'id', keypath: 'id', options: {unique: false}},
     ]
   }, {
-      store: TableNames.WORK_ITEM_AGE,
-      storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
-        {name: 'issueId', keypath: 'issueId', options: {unique: false}},
-        {name: 'status', keypath: 'status', options: {unique: false}},
-      ]
-  },  {
+    store: TableNames.WORK_ITEM_AGE,
+    storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
+      {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+      {name: 'status', keypath: 'status', options: {unique: false}},
+      {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
+    ]
+  }, {
     store: TableNames.ISSUE_HISTORY,
     storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
       {name: 'issueId', keypath: 'issueId', options: {unique: false}},
       {name: 'field', keypath: 'field', options: {unique: false}},
+      {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
     ]
   },
     {
       store: TableNames.CYCLE_TIME,
       storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+        {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
       ]
     },
     {
       store: TableNames.CANCELED_CYCLE,
       storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+        {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
       ]
     },
     {
       store: TableNames.THROUGHPUT,
       storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
         {name: 'issueId', keypath: 'issueId', options: {unique: false}},
+        {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
       ]
     }, {
       store: TableNames.WORK_IN_PROGRESS,
-      storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: []
+      storeConfig: {keyPath: 'id', autoIncrement: true}, storeSchema: [
+        {name: 'datasourceId', keypath: 'datasourceId', options: {unique: false}},
+      ]
     },
   ]
 };
@@ -100,24 +107,22 @@ export const dbConfigIssueData: DBConfig = {
 export function migrationFactoryIssues() {
   return {
     1: (db: any, transaction: { objectStore: (arg0: string) => any; }) => {
-      const issues = transaction.objectStore(TableNames.ISSUES);
-      const workItems = transaction.objectStore(TableNames.WORK_ITEM_AGE);
-      const issueHistory = transaction.objectStore(TableNames.ISSUE_HISTORY);
-      const cycleTime = transaction.objectStore(TableNames.CYCLE_TIME);
-      const canceled = transaction.objectStore(TableNames.CANCELED_CYCLE);
-      const throughput = transaction.objectStore(TableNames.THROUGHPUT);
+      transaction.objectStore(TableNames.ISSUES);
+      transaction.objectStore(TableNames.WORK_ITEM_AGE);
+      transaction.objectStore(TableNames.ISSUE_HISTORY);
+      transaction.objectStore(TableNames.CYCLE_TIME);
+      transaction.objectStore(TableNames.CANCELED_CYCLE);
+      transaction.objectStore(TableNames.THROUGHPUT);
     },
   };
 }
 
 export function migrationFactoryCore() {
-  // The animal table was added with version 2 but none of the existing tables or data needed
-  // to be modified so a migrator for that version is not included.
   return {
     1: (db: any, transaction: { objectStore: (arg0: string) => any; }) => {
-      const issues = transaction.objectStore(TableNames.DATASOURCES);
-      const settings = transaction.objectStore(TableNames.APP_SETTINGS);
-      const status = transaction.objectStore(TableNames.STATUS);
+      transaction.objectStore(TableNames.DATASOURCES);
+      transaction.objectStore(TableNames.APP_SETTINGS);
+      transaction.objectStore(TableNames.STATUS);
     },
   };
 }
@@ -142,9 +147,9 @@ export class StorageService {
     });
   }
 
-  async addDataset(dataset: Datasource): Promise<Datasource> {
+  async addDatasource(datasource: Datasource): Promise<Datasource> {
     this.dbService.selectDb(dbConfigCore.name);
-    return firstValueFrom(this.dbService.add(TableNames.DATASOURCES, dataset));
+    return firstValueFrom(this.dbService.add(TableNames.DATASOURCES, datasource));
   }
 
   async getAllDatasources(): Promise<Datasource[]> {
@@ -157,24 +162,19 @@ export class StorageService {
     await firstValueFrom(this.dbService.delete(TableNames.DATASOURCES, id));
   }
 
-  async updateDatasource(dataset: Datasource): Promise<Datasource> {
+  async updateDatasource(datasource: Datasource): Promise<Datasource> {
     this.dbService.selectDb(dbConfigCore.name);
-    return await firstValueFrom(this.dbService.update(TableNames.DATASOURCES, dataset));
+    return await firstValueFrom(this.dbService.update(TableNames.DATASOURCES, datasource));
   }
 
-  async hasWorkItemAgeData(): Promise<boolean> {
+  async getAllIssues(datasourceId: number): Promise<Issue[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return await firstValueFrom(this.dbService.count(TableNames.WORK_ITEM_AGE)) > 0;
+    return firstValueFrom(this.dbService.getAllByIndex<Issue>(TableNames.ISSUES, 'datasourceId', IDBKeyRange.only(datasourceId)));
   }
 
-  async getAllIssues(): Promise<Issue[]> {
+  async getWorkItemAgeData(datasourceId: number): Promise<WorkItemAgeEntry[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll(TableNames.ISSUES));
-  }
-
-  async getWorkItemAgeData(): Promise<WorkItemAgeEntry[]> {
-    this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll(TableNames.WORK_ITEM_AGE));
+    return firstValueFrom(this.dbService.getAllByIndex<WorkItemAgeEntry>(TableNames.WORK_ITEM_AGE, 'datasourceId', IDBKeyRange.only(datasourceId)));
   }
 
   async addissue(issue: Issue): Promise<Issue> {
@@ -192,9 +192,9 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd(TableNames.WORK_ITEM_AGE, workItemAgeEntries));
   }
 
-  async createDataset(newDataset: Datasource) {
+  async createDatasource(datasource: Datasource) {
     this.dbService.selectDb(dbConfigCore.name);
-    return firstValueFrom(this.dbService.add<Datasource>(TableNames.DATASOURCES, newDataset));
+    return firstValueFrom(this.dbService.add<Datasource>(TableNames.DATASOURCES, datasource));
   }
 
   getDatasource(id: number): Promise<Datasource> {
@@ -218,13 +218,25 @@ export class StorageService {
     return firstValueFrom(this.dbService.deleteDatabase());
   }
 
-  async clearAllData() {
+  async clearAllIssueData(datasourceId: number) {
     this.dbService.selectDb(dbConfigIssueData.name);
-    await firstValueFrom(this.dbService.clear(TableNames.ISSUE_HISTORY));
-    await firstValueFrom(this.dbService.clear(TableNames.ISSUES));
-    await firstValueFrom(this.dbService.clear(TableNames.WORK_ITEM_AGE));
-    await firstValueFrom(this.dbService.clear(TableNames.CYCLE_TIME));
-    await firstValueFrom(this.dbService.clear(TableNames.THROUGHPUT));
+
+    const tables = [
+      TableNames.ISSUES,
+      TableNames.ISSUE_HISTORY,
+      TableNames.WORK_ITEM_AGE,
+      TableNames.CYCLE_TIME,
+      TableNames.CANCELED_CYCLE,
+      TableNames.THROUGHPUT,
+      TableNames.WORK_IN_PROGRESS
+    ];
+
+    for (const table of tables) {
+      const entries = await firstValueFrom(this.dbService.getAllByIndex(table, 'datasourceId', IDBKeyRange.only(datasourceId)));
+      for (const entry of entries) {
+        await firstValueFrom(this.dbService.delete(table, (entry as any).id));
+      }
+    }
   }
 
   async addIssueHistories(histories: IssueHistory[]): Promise<number[]> {
@@ -232,9 +244,9 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd(TableNames.ISSUE_HISTORY, histories));
   }
 
-  async getAllIssueHistories(): Promise<IssueHistory[]> {
+  async getAllIssueHistories(datasourceId: number): Promise<IssueHistory[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll<IssueHistory>(TableNames.ISSUE_HISTORY));
+    return firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'datasourceId', IDBKeyRange.only(datasourceId)));
   }
 
   async addCycleTimeEntries(cycleTimes: CycleTimeEntry[]) {
@@ -242,9 +254,9 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd<CycleTimeEntry>(TableNames.CYCLE_TIME, cycleTimes));
   }
 
-  async getCycleTimeData() {
+  async getCycleTimeData(datasourceId: number) {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll<CycleTimeEntry>(TableNames.CYCLE_TIME));
+    return firstValueFrom(this.dbService.getAllByIndex<CycleTimeEntry>(TableNames.CYCLE_TIME, 'datasourceId', IDBKeyRange.only(datasourceId)));
   }
 
   async addStatuses(status: Status[]) {
@@ -252,9 +264,9 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd<Status>(TableNames.STATUS, status));
   }
 
-  async getThroughputData(): Promise<ThroughputEntry[]> {
+  async getThroughputData(datasourceId: number): Promise<ThroughputEntry[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll<ThroughputEntry>(TableNames.THROUGHPUT));
+    return firstValueFrom(this.dbService.getAllByIndex<ThroughputEntry>(TableNames.THROUGHPUT, 'datasourceId', IDBKeyRange.only(datasourceId)));
   }
 
   async addThroughputData(throughput: ThroughputEntry[]): Promise<number[]> {
@@ -263,9 +275,9 @@ export class StorageService {
   }
 
 
-  getAllStatuses() {
+  getAllStatuses(datasourceId: number) {
     this.dbService.selectDb(dbConfigCore.name);
-    return firstValueFrom(this.dbService.getAll<Status>(TableNames.STATUS));
+    return firstValueFrom(this.dbService.getAllByIndex<Status>(TableNames.STATUS, 'datasourceId', IDBKeyRange.only(datasourceId)));
   }
 
   updateStatus(status: Status) {
@@ -279,9 +291,10 @@ export class StorageService {
     return firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'issueId', IDBKeyRange.only(issue.id)));
   }
 
-  getAllIssueHistoriesForStatuses() {
+  async getAllIssueHistoriesForStatuses(datasourceId: number): Promise<IssueHistory[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'field', IDBKeyRange.only("status")));
+    const issueHistories = await firstValueFrom(this.dbService.getAllByIndex<IssueHistory>(TableNames.ISSUE_HISTORY, 'field', IDBKeyRange.only('status')));
+    return issueHistories.filter(history => history.datasourceId === datasourceId);
   }
 
   async getIssuesByIds(issuesIds: number[]): Promise<Issue[]> {
@@ -301,9 +314,9 @@ export class StorageService {
     return firstValueFrom(this.dbService.bulkAdd<ThroughputEntry>(TableNames.THROUGHPUT, througputs));
   }
 
-  async getWorkInProgressData() {
+  async getWorkInProgressData(datasourceId: number): Promise<WorkInProgressEntry[]> {
     this.dbService.selectDb(dbConfigIssueData.name);
-    return firstValueFrom(this.dbService.getAll<WorkInProgressEntry>(TableNames.WORK_IN_PROGRESS));
+    return firstValueFrom(this.dbService.getAllByIndex<WorkInProgressEntry>(TableNames.WORK_IN_PROGRESS, 'datasourceId', IDBKeyRange.only(datasourceId)));
   }
 
   saveWorkInProgressData(workInProgressEntries: WorkInProgressEntry[]) {

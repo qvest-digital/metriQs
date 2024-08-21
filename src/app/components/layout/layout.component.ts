@@ -13,7 +13,7 @@ import {RouterLink, RouterOutlet} from "@angular/router";
 import {MatSelectModule} from "@angular/material/select";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {StorageService} from "../../services/storage.service";
-import {Datasource, DataSourceType} from "../../models/datasource";
+import {Datasource, DatasourceType} from "../../models/datasource";
 import {ToastrService} from "ngx-toastr";
 import {
     CYCLE_TIME,
@@ -93,10 +93,10 @@ export class LayoutComponent implements OnInit {
 
   async login() {
     if (this.selectedDatasource) {
-      const selectedDataset = this.datasources.find(dataset => dataset.id === this.selectedDatasource);
+      const selectedDatasource = this.datasources.find(dataset => dataset.id === this.selectedDatasource);
       await this.storageService.saveAppSettings({selectedDatasourceId: this.selectedDatasource});
-      if (selectedDataset) {
-        if (selectedDataset.type === 'JIRA_CLOUD') {
+      if (selectedDatasource) {
+        if (selectedDatasource.type === 'JIRA_CLOUD') {
           this.loginToJiraCloud();
         } else {
           this.loginToJiraDataCenter();
@@ -124,9 +124,9 @@ export class LayoutComponent implements OnInit {
 
   async refreshIssues(silent = false) {
     if (this.selectedDatasource) {
-      const selectedDataset = this.datasources.find(dataset => dataset.id === this.selectedDatasource);
-      if (selectedDataset) {
-        if (selectedDataset.type === DataSourceType.JIRA_CLOUD) {
+      const selectedDatasource = this.datasources.find(dataset => dataset.id === this.selectedDatasource);
+      if (selectedDatasource) {
+        if (selectedDatasource.type === DatasourceType.JIRA_CLOUD) {
 
           await this.jiraCloudService.getAndSaveIssues(this.selectedDatasource!);
           try {

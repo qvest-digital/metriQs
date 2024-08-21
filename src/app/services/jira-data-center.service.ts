@@ -88,8 +88,8 @@ export class JiraDataCenterService implements OnInit {
     this.router.navigate([DASHBOARD]);
   }
 
-  async getIssues(dataSetId: number): Promise<Issue[]> {
-    const config = await this.databaseService.getDatasource(dataSetId);
+  async getIssues(datasourceId: number): Promise<Issue[]> {
+    const config = await this.databaseService.getDatasource(datasourceId);
 
     if (config !== null && config?.access_token
     ) {
@@ -111,7 +111,7 @@ export class JiraDataCenterService implements OnInit {
       const issues: Issue[] = response!.issues!.map((issue: Version3.Version3Models.Issue) => ({
         issueKey: issue.key,
         title: issue.fields.summary,
-        dataSourceId: config.id!,
+        datasourceId: config.id!,
         createdDate: new Date(issue.fields.created),
         status: issue.fields.status!.name!,
         externalStatusId: Number.parseInt(issue.fields.status!.id!),

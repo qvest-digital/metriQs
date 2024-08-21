@@ -43,7 +43,8 @@ export class WorkInProgressPageComponent implements OnInit {
   }
 
   async ngOnInit() {
-    const wipData: WorkInProgressEntry[] = await this.storageService.getWorkInProgressData();
+    const appSettings = await this.storageService.getAppSettings();
+    const wipData: WorkInProgressEntry[] = await this.storageService.getWorkInProgressData(appSettings.selectedDatasourceId);
     const allDates = this.generateAllDates(wipData);
     const mappedData = this.mapDataToDates(allDates, wipData);
 

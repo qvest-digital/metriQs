@@ -35,7 +35,7 @@ export class BusinessLogicService {
       // Add a separate IssueHistory entry for the issue with createdDate
       const issueCreatedHistory: IssueHistory = {
         issueId: issue.id!,
-        datasourceId: issue.dataSourceId,
+        datasourceId: issue.datasourceId,
         fromValue: '',
         toValueId: Number.parseInt(findStatusHistory.items[0].from),
         toValue: firstStatusChange.items[0].fromString,
@@ -55,7 +55,7 @@ export class BusinessLogicService {
       }) => {
         const issueHistory: IssueHistory = {
           issueId: issue.id!,
-          datasourceId: issue.dataSourceId,
+          datasourceId: issue.datasourceId,
           fromValue: item.fromString || '',
           fromValueId: Number.parseInt(item.from),
           toValueId: Number.parseInt(item.to),
@@ -69,13 +69,13 @@ export class BusinessLogicService {
     return issueHistories;
   }
 
-  async getAllInProgressStatuses(): Promise<Status[]> {
-    const allStatuses = await this.storageService.getAllStatuses();
+  async getAllInProgressStatuses(dataSourceId: number): Promise<Status[]> {
+    const allStatuses = await this.storageService.getAllStatuses(dataSourceId);
     return allStatuses.filter(status => status.category === StatusCategory.InProgress);
   }
 
   public async findFirstInProgressStatusChange(issue: Issue) {
-    const allStatuses = await this.storageService.getAllStatuses();
+    const allStatuses = await this.storageService.getAllStatuses(issue.datasourceId);
     const inProgressStatusIds = allStatuses
       .filter(status => status.category === StatusCategory.InProgress)
       .map(status => status.externalId);
@@ -93,38 +93,12 @@ export class BusinessLogicService {
   }
 
 
-  public async findLatestResolvedIssueHistory(issueHistories: IssueHistory[]): Promise<IssueHistory | undefined> {
-    const allStatuses = await this.storageService.getAllStatuses();
-    const doneStatusIds = allStatuses
-      .filter(status => status.category === StatusCategory.Done)
-      .map(status => status.externalId);
-
-    const resolvedHistories = issueHistories
-      .filter(history => history.field === 'status' && doneStatusIds.includes(history.toValueId!))
-      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
-
-    return resolvedHistories.length > 0 ? resolvedHistories[0] : undefined;
-  }
-
-  public async findFirstInProgressIssueHistory(issueHistories: IssueHistory[]): Promise<IssueHistory | undefined> {
-    const allStatuses = await this.storageService.getAllStatuses();
-    const doneStatusIds = allStatuses
-      .filter(status => status.category === StatusCategory.InProgress)
-      .map(status => status.externalId);
-
-    const resolvedHistories = issueHistories
-      .filter(history => history.field === 'status' && doneStatusIds.includes(history.toValueId!))
-      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
-
-    return resolvedHistories.length > 0 ? resolvedHistories[0] : undefined;
-  }
-
   public findAllNewStatuses(issues: Issue[], issueHistories: IssueHistory[]): Status[] {
     let statuses = new Array<Status>();
 
     issues.forEach(issue => {
       const status: Status = {
-        dataSourceId: issue.dataSourceId,
+        datasourceId: issue.datasourceId,
         name: issue.status,
         externalId: issue.externalStatusId
       };
@@ -137,12 +111,12 @@ export class BusinessLogicService {
         if (history.fromValueId && !this.stateExistsInSet(statuses, history.fromValueId!)) {
 
           statuses.push({
-            dataSourceId: history.datasourceId,
+            datasourceId: history.datasourceId,
             name: history.fromValue,
             externalId: history.fromValueId!
           });
         } else if (history.toValueId && !this.stateExistsInSet(statuses, history.toValueId!)) {
-          statuses.push({dataSourceId: history.datasourceId, name: history.toValue, externalId: history.toValueId!});
+          statuses.push({datasourceId: history.datasourceId, name: history.toValue, externalId: history.toValueId!});
         }
       }
     });
@@ -196,7 +170,7 @@ export class BusinessLogicService {
     const canceledCycleEntries: CanceledCycleEntry[] = [];
     let workItemAgeEntry: WorkItemAgeEntry | null = null;
 
-    const allStatuses = await this.storageService.getAllStatuses();
+    const allStatuses = await this.storageService.getAllStatuses(i.datasourceId);
     const inProgressStatusIds = allStatuses.filter(status => status.category === StatusCategory.InProgress).map(status => status.externalId);
     const doneStatusIds = allStatuses.filter(status => status.category === StatusCategory.Done).map(status => status.externalId);
     const toDoProgressStatusIds = allStatuses.filter(status => status.category === StatusCategory.ToDo).map(status => status.externalId);
@@ -222,6 +196,7 @@ export class BusinessLogicService {
         if (startCycleEntry && endCycleEntry) {
           // End the cycle if the issue switches into a Done state
           const cycleTimeEntry: CycleTimeEntry = {
+            datasourceId: i.datasourceId,
             status: endCycleEntry.toValue,
             externalStatusId: endCycleEntry.toValueId!,
             inProgressState: startCycleEntry.toValue,
@@ -241,6 +216,7 @@ export class BusinessLogicService {
         } else if (startCycleEntry && canceledCycleEntry) {
           //create a canceled cycle entry
           const canceledCycle: CanceledCycleEntry = {
+            datasourceId: i.datasourceId,
             status: canceledCycleEntry.toValue,
             externalStatusId: canceledCycleEntry.toValueId!,
             inProgressState: startCycleEntry.toValue,
@@ -261,6 +237,7 @@ export class BusinessLogicService {
       }
       if (startCycleEntry) {
         workItemAgeEntry = {
+          datasourceId: i.datasourceId,
           status: i.status,
           externalStatusId: i.externalStatusId,
           inProgressState: startCycleEntry.toValue,
@@ -297,6 +274,7 @@ export class BusinessLogicService {
     throughputMap.forEach((data, dateStr) => {
       const date = new Date(dateStr);
       const throughputEntry: ThroughputEntry = {
+        datasourceId: cycleTimeEntries[0].datasourceId,
         date: date,
         throughput: data.count,
         issueIds: data.issueIds
@@ -308,9 +286,9 @@ export class BusinessLogicService {
   }
 
 
-  async computeWorkInProgress(): Promise<WorkInProgressEntry[]> {
-    const issueHistories: IssueHistory[] = await this.storageService.getAllIssueHistories();
-    const statuses: Status[] = await this.storageService.getAllStatuses();
+  async computeWorkInProgress(datasourceId: number): Promise<WorkInProgressEntry[]> {
+    const issueHistories: IssueHistory[] = await this.storageService.getAllIssueHistories(datasourceId);
+    const statuses: Status[] = await this.storageService.getAllStatuses(datasourceId);
 
     const inProgressStatusIds = statuses
       .filter(status => status.category === StatusCategory.InProgress)
@@ -331,6 +309,7 @@ export class BusinessLogicService {
     const workInProgressEntries: WorkInProgressEntry[] = [];
     workInProgressMap.forEach((issueIds, dateStr) => {
       workInProgressEntries.push({
+        datasourceId: datasourceId,
         date: new Date(dateStr),
         wip: issueIds.size,
         issueIds: Array.from(issueIds)

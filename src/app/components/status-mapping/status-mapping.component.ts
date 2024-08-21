@@ -5,6 +5,7 @@ import {StorageService} from '../../services/storage.service';
 import {NgForOf} from "@angular/common";
 import {MatChip} from "@angular/material/chips";
 import {ToastrService} from "ngx-toastr";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-status-mapping',
@@ -22,13 +23,19 @@ export class StatusMappingComponent implements OnInit {
   statuses: Status[] = [];
   statusCategories = Object.values(StatusCategory);
   connectedDropLists: string[] = [];
+  datasourceId?: number;
 
-  constructor(private storageService: StorageService, private toastr: ToastrService) {
+  constructor(private storageService: StorageService, private toastr: ToastrService, private route: ActivatedRoute,
+              private router: Router,) {
   }
 
   async ngOnInit() {
-    this.statuses = await this.storageService.getAllStatuses();
-    this.connectedDropLists = ['uncategorized', ...this.statusCategories.map(category => category)];
+    this.datasourceId = +this.route.snapshot.paramMap.get('id')!;
+    if (this.datasourceId !== undefined && this.datasourceId > 0) {
+      this.statuses = await this.storageService.getAllStatuses(this.datasourceId);
+      this.connectedDropLists = ['uncategorized', ...this.statusCategories.map(category => category)];
+    }
+
   }
 
   async drop(event: CdkDragDrop<Status[]>, categoryName: string) {

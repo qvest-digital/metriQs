@@ -98,7 +98,8 @@ export class CycleTimeScatterplotComponent {
   }
 
   async loadData() {
-    const items = await this.databaseService.getCycleTimeData();
+    const appSettings = await this.databaseService.getAppSettings();
+    const items = await this.databaseService.getCycleTimeData(appSettings.selectedDatasourceId);
     items.sort((a, b) => a.issueId > b.issueId ? 1 : -1); // Sort items by issueId in descending order
     this.percentilValue = this.businessLogicService.computePercentile(items.map(item => item.cycleTime), 80);
     this.updateAnnotationLine(this.percentilValue);
